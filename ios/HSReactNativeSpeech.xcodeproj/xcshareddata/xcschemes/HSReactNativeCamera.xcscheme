@@ -14,10 +14,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "FC2952D722CAD67F00716A3A"
-               BuildableName = "libHSReactNativeCamera.a"
-               BlueprintName = "HSReactNativeCamera"
-               ReferencedContainer = "container:HSReactNativeCamera.xcodeproj">
+               BlueprintIdentifier = "FC664EDB22CAD96E00FD8AE7"
+               BuildableName = "libHSReactNativeSpeech.a"
+               BlueprintName = "HSReactNativeSpeech"
+               ReferencedContainer = "container:HSReactNativeSpeech.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -45,10 +45,10 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "FC2952D722CAD67F00716A3A"
-            BuildableName = "libHSReactNativeCamera.a"
-            BlueprintName = "HSReactNativeCamera"
-            ReferencedContainer = "container:HSReactNativeCamera.xcodeproj">
+            BlueprintIdentifier = "FC664EDB22CAD96E00FD8AE7"
+            BuildableName = "libHSReactNativeSpeech.a"
+            BlueprintName = "HSReactNativeSpeech"
+            ReferencedContainer = "container:HSReactNativeSpeech.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <AdditionalOptions>
@@ -63,10 +63,10 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "FC2952D722CAD67F00716A3A"
-            BuildableName = "libHSReactNativeCamera.a"
-            BlueprintName = "HSReactNativeCamera"
-            ReferencedContainer = "container:HSReactNativeCamera.xcodeproj">
+            BlueprintIdentifier = "FC664EDB22CAD96E00FD8AE7"
+            BuildableName = "libHSReactNativeSpeech.a"
+            BlueprintName = "HSReactNativeSpeech"
+            ReferencedContainer = "container:HSReactNativeSpeech.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </ProfileAction>
