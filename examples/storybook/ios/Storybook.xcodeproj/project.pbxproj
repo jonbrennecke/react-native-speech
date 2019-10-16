@@ -25,12 +25,10 @@
 		870A79F4ED284024BCF7390C /* libHSReactNativeSpeech.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 03CE3A2DD6DA4E129701D0A2 /* libHSReactNativeSpeech.a */; };
 		8B92FE923CC847E19726BA49 /* libHSReactNativeMedia.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 73B85EEA31E74B2EAED371F6 /* libHSReactNativeMedia.a */; };
 		ADBDB9381DFEBF1600ED6528 /* libRCTBlob.a in Frameworks */ = {isa = PBXBuildFile; fileRef = ADBDB9271DFEBF0700ED6528 /* libRCTBlob.a */; };
-		FC30F1C023184B55004B165F /* onboarding.mov in Resources */ = {isa = PBXBuildFile; fileRef = FC30F1BF23184B55004B165F /* onboarding.mov */; };
 		FC6B60CF22AF63ED0060F828 /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FC6B60A022AF63EC0060F828 /* JavaScriptCore.framework */; };
 		FC6EA7D621CEA44D007C3B3E /* PassionOne-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FC6EA7AC21CEA44D007C3B3E /* PassionOne-Regular.ttf */; };
 		FC6EA7D721CEA44D007C3B3E /* PT_Sans-Web-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FC6EA7D421CEA44D007C3B3E /* PT_Sans-Web-Bold.ttf */; };
 		FC6EA7D821CEA44D007C3B3E /* PT_Sans-Web-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FC6EA7D521CEA44D007C3B3E /* PT_Sans-Web-Regular.ttf */; };
-		FC8F5AB02342D2A50021081F /* Watermark.png in Resources */ = {isa = PBXBuildFile; fileRef = FC8F5AAF2342D2A50021081F /* Watermark.png */; };
 		FCDAA01C22AC8D8F00A2E246 /* Empty.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCDAA01B22AC8D8F00A2E246 /* Empty.swift */; };
 /* End PBXBuildFile section */
 
@@ -357,13 +355,11 @@
 		B4959B8090384D419DA15F5A /* HSReactNativeMedia.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = HSReactNativeMedia.xcodeproj; path = "../node_modules/@jonbrennecke/react-native-media/ios/HSReactNativeMedia.xcodeproj"; sourceTree = "<group>"; };
 		BD50A92D35494C8A876C6C03 /* libReactNativeNavigation.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libReactNativeNavigation.a; sourceTree = "<group>"; };
 		C58E7DD208D94D92847F0B1B /* libReactNativeConfig-tvOS.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = "libReactNativeConfig-tvOS.a"; sourceTree = "<group>"; };
-		FC30F1BF23184B55004B165F /* onboarding.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = onboarding.mov; sourceTree = "<group>"; };
 		FC664F4122CADD7600FD8AE7 /* libHSCameraUtils.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libHSCameraUtils.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		FC6B60A022AF63EC0060F828 /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		FC6EA7AC21CEA44D007C3B3E /* PassionOne-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "PassionOne-Regular.ttf"; path = "../assets/fonts/PassionOne-Regular.ttf"; sourceTree = "<group>"; };
 		FC6EA7D421CEA44D007C3B3E /* PT_Sans-Web-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "PT_Sans-Web-Bold.ttf"; path = "../assets/fonts/PT_Sans-Web-Bold.ttf"; sourceTree = "<group>"; };
 		FC6EA7D521CEA44D007C3B3E /* PT_Sans-Web-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "PT_Sans-Web-Regular.ttf"; path = "../assets/fonts/PT_Sans-Web-Regular.ttf"; sourceTree = "<group>"; };
-		FC8F5AAF2342D2A50021081F /* Watermark.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Watermark.png; sourceTree = "<group>"; };
 		FCBFAF0622CBDB0200A0AC11 /* PromiseKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PromiseKit.framework; path = "../../../../../../../Library/Developer/Xcode/DerivedData/Storybook-aykofoufjpltyqchwrnbfzpoimmw/Build/Products/Debug-iphoneos/PromiseKit.framework"; sourceTree = "<group>"; };
 		FCDAA01A22AC8D8E00A2E246 /* Storybook-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Storybook-Bridging-Header.h"; sourceTree = "<group>"; };
 		FCDAA01B22AC8D8F00A2E246 /* Empty.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Empty.swift; sourceTree = "<group>"; };
@@ -580,8 +576,6 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
-				FC8F5AAF2342D2A50021081F /* Watermark.png */,
-				FC30F1BF23184B55004B165F /* onboarding.mov */,
 				13B07FAE1A68108700A75B9A /* Storybook */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				00E356EF1AD99517003FC87E /* StorybookTests */,
@@ -1050,8 +1044,6 @@
 				13B07FBF1A68108700A75B9A /* Assets.xcassets in Resources */,
 				FC6EA7D721CEA44D007C3B3E /* PT_Sans-Web-Bold.ttf in Resources */,
 				FC6EA7D821CEA44D007C3B3E /* PT_Sans-Web-Regular.ttf in Resources */,
-				FC30F1C023184B55004B165F /* onboarding.mov in Resources */,
-				FC8F5AB02342D2A50021081F /* Watermark.png in Resources */,
 				FC6EA7D621CEA44D007C3B3E /* PassionOne-Regular.ttf in Resources */,
 				13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */,
 			);

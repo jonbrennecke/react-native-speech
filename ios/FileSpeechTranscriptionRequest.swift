@@ -164,11 +164,10 @@ extension FileSpeechTranscriptionRequest: SFSpeechRecognitionTaskDelegate {
         return
       }
     }
-    guard case let .pending(_, startTime) = state else {
+    guard case .pending = state else {
       delegate.speechTranscriptionRequestDidEnd()
       return
     }
-    let executionTime = CFAbsoluteTimeGetCurrent() - startTime
     delegate.speechTranscriptionRequestDidFail()
   }
 

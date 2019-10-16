@@ -7,20 +7,28 @@
   bool hasListeners;
 }
 
+- (instancetype)init {
+  self = [super init];
+  if (self) {
+    HSSpeechManager.sharedInstance.delegate = self;
+  }
+  return self;
+}
+
 #pragma mark - SpeechManagerDelegate
 
 - (void)speechManagerDidBecomeAvailable {
   if (!hasListeners) {
     return;
   }
-  [self sendEventWithName:@"speechManagerDidBecomeAvailable" body:@{}];
+  [self sendEventWithName:@"speechTranscriptionDidBecomeAvailable" body:@{}];
 }
 
 - (void)speechManagerDidBecomeUnavailable {
   if (!hasListeners) {
     return;
   }
-  [self sendEventWithName:@"speechManagerDidBecomeUnavailable" body:@{}];
+  [self sendEventWithName:@"speechTranscriptionDidBecomeUnavailable" body:@{}];
 }
 
 - (void)speechManagerDidChangeLocale:(NSLocale *)locale {
@@ -28,7 +36,7 @@
     return;
   }
   NSDictionary *json = [LocaleUtil jsonify:locale];
-  [self sendEventWithName:@"speechManagerDidChangeLocale" body:json];
+  [self sendEventWithName:@"speechTranscriptionDidChangeLocale" body:json];
 }
 
 - (void)speechManagerDidReceiveSpeechTranscriptionWithIsFinal:(BOOL)isFinal
@@ -56,29 +64,28 @@
     @"segments" : segments,
     @"locale" : [LocaleUtil jsonify:locale]
   };
-  [self sendEventWithName:@"speechManagerDidReceiveSpeechTranscription"
-                     body:body];
+  [self sendEventWithName:@"speechTranscriptionDidOutput" body:body];
 }
 
 - (void)speechManagerDidNotDetectSpeech {
   if (!hasListeners) {
     return;
   }
-  [self sendEventWithName:@"speechManagerDidNotDetectSpeech" body:@{}];
+  [self sendEventWithName:@"speechTranscriptionDidNotDetectSpeech" body:@{}];
 }
 
 - (void)speechManagerDidEnd {
   if (!hasListeners) {
     return;
   }
-  [self sendEventWithName:@"speechManagerDidEnd" body:@{}];
+  [self sendEventWithName:@"speechTranscriptionDidEnd" body:@{}];
 }
 
 - (void)speechManagerDidFail {
   if (!hasListeners) {
     return;
   }
-  [self sendEventWithName:@"speechManagerDidFail" body:@{}];
+  [self sendEventWithName:@"speechTranscriptionDidFail" body:@{}];
 }
 
 #pragma mark - React Native module
@@ -97,19 +104,19 @@
 
 - (NSArray<NSString *> *)supportedEvents {
   return @[
-    @"speechManagerDidReceiveSpeechTranscription",
-    @"speechManagerDidBecomeAvailable",
-    @"speechManagerDidBecomeUnavailable",
-    @"speechManagerDidNotDetectSpeech",
-    @"speechManagerDidEnd",
-    @"speechManagerDidFail",
-    @"speechManagerDidChangeLocale",
+    @"speechTranscriptionDidBecomeAvailable",
+    @"speechTranscriptionDidBecomeUnavailable",
+    @"speechTranscriptionDidChangeLocale",
+    @"speechTranscriptionDidEnd",
+    @"speechTranscriptionDidBegin",
+    @"speechTranscriptionDidFail",
+    @"speechTranscriptionDidNotDetectSpeech",
+    @"speechTranscriptionDidOutput",
   ];
 }
 
-RCT_EXPORT_MODULE(SpeechManager)
+RCT_EXPORT_MODULE(HSSpeechManager)
 
-// TODO: rename to transcribeAsset
 RCT_EXPORT_METHOD(beginSpeechTranscriptionOfAsset
                   : (NSString *)assetID withCallback
                   : (RCTResponseSenderBlock)callback) {
@@ -128,6 +135,10 @@ RCT_EXPORT_METHOD(beginSpeechTranscriptionOfAsset
                      options:requestOptions
                resultHandler:^(AVAsset *asset, AVAudioMix *audioMix,
                                NSDictionary *info) {
+                 if (self->hasListeners) {
+                   [self sendEventWithName:@"speechTranscriptionDidBegin"
+                                      body:@{}];
+                 }
                  [HSSpeechManager.sharedInstance
                      startCaptureForAsset:asset
                                  callback:^(NSError *error, BOOL success) {
@@ -142,6 +153,9 @@ RCT_EXPORT_METHOD(beginSpeechTranscriptionOfAsset
 
 RCT_EXPORT_METHOD(beginSpeechTranscriptionOfAudioSession
                   : (RCTResponseSenderBlock)callback) {
+  if (hasListeners) {
+    [self sendEventWithName:@"speechTranscriptionDidBegin" body:@{}];
+  }
   [HSSpeechManager.sharedInstance
       startCaptureForAudioSessionWithCallback:^(NSError *error, BOOL success) {
         if (error != nil) {

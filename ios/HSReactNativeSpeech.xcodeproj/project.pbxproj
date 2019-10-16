@@ -34,7 +34,7 @@
 		FC1FC2B623568F6F0014BEA2 /* SpeechTranscriptionRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechTranscriptionRequest.swift; sourceTree = "<group>"; };
 		FC1FC2B823568F980014BEA2 /* FileSpeechTranscriptionRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileSpeechTranscriptionRequest.swift; sourceTree = "<group>"; };
 		FC1FC2BA23568FC40014BEA2 /* LiveSpeechTranscriptionRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveSpeechTranscriptionRequest.swift; sourceTree = "<group>"; };
-		FC1FC2BC23568FE40014BEA2 /* HSSpeechBridgeModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = HSSpeechBridgeModule.m; sourceTree = "<group>"; };
+		FC1FC2BC23568FE40014BEA2 /* HSSpeechBridgeModule.m */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.c.objc; path = HSSpeechBridgeModule.m; sourceTree = "<group>"; tabWidth = 2; };
 		FC1FC2BE23568FFC0014BEA2 /* HSSpeechBridgeModule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HSSpeechBridgeModule.h; sourceTree = "<group>"; };
 		FC1FC2BF235690640014BEA2 /* LocaleUtil.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LocaleUtil.m; sourceTree = "<group>"; };
 		FC1FC2C12356907C0014BEA2 /* LocaleUtil.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LocaleUtil.h; sourceTree = "<group>"; };

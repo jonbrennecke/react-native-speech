@@ -1,29 +1,57 @@
 // @flow
-import React from 'react';
+import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import identity from 'lodash/identity';
+import { autobind } from 'core-decorators';
+
+import {
+  SpeechTranscriptionEvents,
+  SpeechTranscriptionEventEmitter,
+} from '../utils';
+import { actionCreators } from './speechActionCreators';
+import { selectors } from './speechSelectors';
 
 import type { ComponentType } from 'react';
 
-import type { Dispatch } from '../types';
-import type { ISpeechState } from './';
+import type { Dispatch, ReturnType, DispatchAction } from '../types';
+import type { ISpeechState, SpeechTranscriptionStatus } from './';
 
 type OwnProps = {};
 
-type StateProps = {};
+type StateProps = {
+  speechTranscriptionAvailability: boolean,
+  speechTranscriptionStatus: SpeechTranscriptionStatus,
+};
 
-type DispatchProps = {};
+type DispatchProps = {
+  setSpeechTranscriptionAvailability: boolean => DispatchAction<any>,
+  setSpeechTranscriptionStatus: SpeechTranscriptionStatus => DispatchAction<
+    any
+  >,
+};
 
 export type SpeechStateHOCProps = OwnProps & StateProps & DispatchProps;
 
 function mapCameraStateToProps(state: ISpeechState): $Exact<StateProps> {
-  return {};
+  return {
+    speechTranscriptionAvailability: selectors.selectSpeechTranscriptionAvailability(
+      state
+    ),
+    speechTranscriptionStatus: selectors.selectSpeechTranscriptionStatus(state),
+  };
 }
 
 function mapCameraDispatchToProps(
   dispatch: Dispatch<any>
 ): $Exact<DispatchProps> {
-  return {};
+  return {
+    setSpeechTranscriptionAvailability: available =>
+      dispatch(
+        actionCreators.setSpeechTranscriptionAvailability({ available })
+      ),
+    setSpeechTranscriptionStatus: status =>
+      dispatch(actionCreators.setSpeechTranscriptionStatus({ status })),
+  };
 }
 
 const createSlicedStateToPropsMapper = <State, StateSlice, StateProps>(
@@ -46,13 +74,13 @@ const createSlicedDispatchToPropsMapper = <State, StateSlice, DispatchProps>(
   };
 };
 
-export type CameraStateHOC<OriginalProps> = (
-  Component: ComponentType<SpeechStateHOCProps & OriginalProps>
-) => ComponentType<OriginalProps>;
+export type SpeechStateHOC<PassThroughProps> = (
+  Component: ComponentType<SpeechStateHOCProps & PassThroughProps>
+) => ComponentType<PassThroughProps>;
 
-export function createCameraStateHOC<PassThroughProps, State: ISpeechState>(
+export function createSpeechStateHOC<PassThroughProps, State: ISpeechState>(
   stateSliceAccessor?: State => ISpeechState = identity
-): CameraStateHOC<PassThroughProps> {
+): SpeechStateHOC<PassThroughProps> {
   const mapStateToProps = createSlicedStateToPropsMapper(
     mapCameraStateToProps,
     stateSliceAccessor
@@ -61,8 +89,121 @@ export function createCameraStateHOC<PassThroughProps, State: ISpeechState>(
     mapCameraDispatchToProps,
     stateSliceAccessor
   );
-  return Component => {
-    const fn = (props: PassThroughProps) => <Component {...props} />;
-    return connect(mapStateToProps, mapDispatchToProps)(fn);
+
+  return WrappedComponent => {
+    // $FlowFixMe
+    @autobind
+    class SpeechScreenStateComponent extends PureComponent<
+      SpeechStateHOCProps & PassThroughProps
+    > {
+      // eslint-disable-next-line flowtype/generic-spacing
+      eventListeners: Map<
+        $Keys<typeof SpeechTranscriptionEvents>,
+        ReturnType<typeof SpeechTranscriptionEventEmitter.addListener>
+      > = new Map();
+
+      componentDidMount() {
+        this.addSpeechTranscriptionEventListeners();
+      }
+
+      componentWillUnmount() {
+        this.removeSpeechTranscriptionEventListeners();
+      }
+
+      addSpeechTranscriptionEventListeners() {
+        this.eventListeners.set(
+          'didBecomeAvailable',
+          SpeechTranscriptionEventEmitter.addListener(
+            SpeechTranscriptionEvents.didBecomeAvailable,
+            this.speechTranscriptionDidBecomeAvailable
+          )
+        );
+        this.eventListeners.set(
+          'didBecomeUnavailable',
+          SpeechTranscriptionEventEmitter.addListener(
+            SpeechTranscriptionEvents.didBecomeUnavailable,
+            this.speechTranscriptionDidBecomeUnavailable
+          )
+        );
+        this.eventListeners.set(
+          'didBegin',
+          SpeechTranscriptionEventEmitter.addListener(
+            SpeechTranscriptionEvents.didBegin,
+            this.speechTranscriptionDidBegin
+          )
+        );
+        this.eventListeners.set(
+          'didEnd',
+          SpeechTranscriptionEventEmitter.addListener(
+            SpeechTranscriptionEvents.didEnd,
+            this.speechTranscriptionDidEnd
+          )
+        );
+        this.eventListeners.set(
+          'didOutput',
+          SpeechTranscriptionEventEmitter.addListener(
+            SpeechTranscriptionEvents.didOutput,
+            this.speechTranscriptionDidOutput
+          )
+        );
+        this.eventListeners.set(
+          'didFail',
+          SpeechTranscriptionEventEmitter.addListener(
+            SpeechTranscriptionEvents.didFail,
+            this.speechTranscriptionDidFail
+          )
+        );
+        this.eventListeners.set(
+          'didNotDetectSpeech',
+          SpeechTranscriptionEventEmitter.addListener(
+            SpeechTranscriptionEvents.didNotDetectSpeech,
+            this.speechTranscriptionDidNotDetectSpeech
+          )
+        );
+      }
+
+      removeSpeechTranscriptionEventListeners() {
+        this.eventListeners.forEach(eventListener => {
+          eventListener.remove();
+        });
+      }
+
+      speechTranscriptionDidBecomeAvailable() {
+        this.props.setSpeechTranscriptionAvailability(true);
+      }
+
+      speechTranscriptionDidBecomeUnavailable() {
+        this.props.setSpeechTranscriptionAvailability(false);
+      }
+
+      speechTranscriptionDidBegin() {
+        this.props.setSpeechTranscriptionStatus('transcribing');
+      }
+
+      speechTranscriptionDidEnd() {
+        this.props.setSpeechTranscriptionStatus('ready');
+      }
+
+      speechTranscriptionDidOutput(transcription) {
+        console.log(transcription);
+      }
+
+      speechTranscriptionDidFail() {
+        this.props.setSpeechTranscriptionStatus('ready');
+        // TODO: set error in state
+      }
+
+      speechTranscriptionDidNotDetectSpeech() {
+        console.log('no speech detected');
+      }
+
+      render() {
+        return <WrappedComponent {...this.props} />;
+      }
+    }
+
+    return connect(mapStateToProps, mapDispatchToProps)(
+      SpeechScreenStateComponent
+    );
   };
 }

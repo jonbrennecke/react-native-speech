@@ -6,18 +6,19 @@ const { HSSpeechManager: NativeSpeechManager } = NativeModules;
 
 export const SpeechManager = Bluebird.promisifyAll(NativeSpeechManager);
 
-export const SpeechManagerEventEmitter = new NativeEventEmitter(
+export const SpeechTranscriptionEventEmitter = new NativeEventEmitter(
   NativeSpeechManager
 );
 
-export const SpeechManagerEvents = {
-  didBecomeAvailable: 'speechManagerDidBecomeAvailable',
-  didBecomeUnavailable: 'speechManagerDidBecomeUnavailable',
-  didChangeLocale: 'speechManagerDidChangeLocale',
-  didReceiveSpeechTranscription: 'speechManagerDidReceiveSpeechTranscription',
-  didNotDetectSpeech: 'speechManagerDidNotDetectSpeech',
-  didEnd: 'speechManagerDidEnd',
-  didFail: 'speechManagerDidFail',
+export const SpeechTranscriptionEvents = {
+  didBecomeAvailable: 'speechTranscriptionDidBecomeAvailable',
+  didBecomeUnavailable: 'speechTranscriptionDidBecomeUnavailable',
+  didChangeLocale: 'speechTranscriptionDidChangeLocale',
+  didOutput: 'speechTranscriptionDidOutput',
+  didNotDetectSpeech: 'speechTranscriptionDidNotDetectSpeech',
+  didBegin: 'speechTranscriptionDidBegin',
+  didEnd: 'speechTranscriptionDidEnd',
+  didFail: 'speechTranscriptionDidFail',
 };
 
 export const beginSpeechTranscriptionOfAsset = async (
@@ -26,14 +27,24 @@ export const beginSpeechTranscriptionOfAsset = async (
   return SpeechManager.beginSpeechTranscriptionOfAssetAsync(assetID);
 };
 
+// eslint-disable-next-line flowtype/generic-spacing
 export const beginSpeechTranscriptionOfAudioSession = async (): Promise<
   boolean
 > => {
   return SpeechManager.beginSpeechTranscriptionOfAudioSessionAsync();
 };
 
+// eslint-disable-next-line flowtype/generic-spacing
 export const endSpeechTranscriptionOfAudioSession = async (): Promise<
   boolean
 > => {
   return SpeechManager.endSpeechTranscriptionOfAudioSessionAsync();
+};
+
+export const requestSpeechPermissions = async (): Promise<boolean> => {
+  return SpeechManager.requestSpeechPermissionsAsync();
+};
+
+export const hasSpeechPermissions = async (): Promise<boolean> => {
+  return SpeechManager.hasSpeechPermissionsAsync();
 };
