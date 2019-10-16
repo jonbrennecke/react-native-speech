@@ -191,6 +191,7 @@ export function createSpeechStateHOC<PassThroughProps, State: ISpeechState>(
       speechTranscriptionDidFail() {
         this.props.setSpeechTranscriptionStatus('ready');
         // TODO: set error in state
+        console.log('transcription failed');
       }
 
       speechTranscriptionDidNotDetectSpeech() {

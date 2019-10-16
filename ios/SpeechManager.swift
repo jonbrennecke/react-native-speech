@@ -190,30 +190,25 @@ class SpeechManager: NSObject {
   }
 
   @objc
-  public func startCapture(forAsset asset: AVAsset, callback: @escaping (Error?, Bool) -> Void) {
-    SpeechManager.operationQueue.addOperation {
-      AudioUtil.extractMonoAudio(forAsset: asset) { error, monoAsset in
-        if let error = error {
-          callback(error, false)
-          return
-        }
-        guard let monoAsset = monoAsset else {
-          callback(nil, false)
-          return
-        }
-        guard let request = FileSpeechTranscriptionRequest(forAsset: monoAsset, recognizer: self.recognizer, delegate: self) else {
-          callback(nil, false)
-          return
-        }
-        switch request.startTranscription() {
-        case .success:
-          self.state = .pending(.file(request))
-          callback(nil, true)
-          break
-        case let .failure(error):
-          callback(error, false)
-          break
-        }
+  public func startCapture(forAsset asset: AVAsset, callback _: @escaping (Error?, Bool) -> Void) {
+    AudioUtil.createTemporaryAudioFile(fromAsset: asset) { [weak self] result in
+      guard let strongSelf = self else { return }
+      guard case let .success(audioFile) = result else {
+        strongSelf.delegate?.speechManagerDidFail()
+        return
+      }
+      guard let request = FileSpeechTranscriptionRequest(
+        forAudioFile: audioFile, recognizer: strongSelf.recognizer, delegate: strongSelf
+      ) else {
+        strongSelf.delegate?.speechManagerDidFail()
+        return
+      }
+      switch request.startTranscription() {
+      case .success:
+        strongSelf.state = .pending(.file(request))
+      case .failure:
+        strongSelf.delegate?.speechManagerDidFail()
+        break
       }
     }
   }

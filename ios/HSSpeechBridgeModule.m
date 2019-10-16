@@ -140,7 +140,7 @@ RCT_EXPORT_METHOD(beginSpeechTranscriptionOfAsset
                                       body:@{}];
                  }
                  [HSSpeechManager.sharedInstance
-                     startCaptureForAsset:asset
+                     startCaptureForAsset:(AVURLAsset *)asset
                                  callback:^(NSError *error, BOOL success) {
                                    if (error != nil) {
                                      callback(@[ error, @(NO) ]);

@@ -43,7 +43,7 @@ const StoryComponent = wrapWithSpeechState(({
     <SafeAreaView style={styles.center}>
       <Button
         disabled={disabled}
-        title="Start"
+        title="Transcribe audio file"
         onPress={start}
       />
     </SafeAreaView>

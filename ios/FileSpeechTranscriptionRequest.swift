@@ -16,36 +16,39 @@ class FileSpeechTranscriptionRequest: NSObject, SpeechTranscriptionRequest {
   }
 
   private var state: State = .unstarted
-  private let asset: AVAsset
-  private let assetReader: AVAssetReader
-  private let assetReaderOutput: AVAssetReaderTrackOutput
+  private let audioFile: AVAudioFile
+
+  // TODO: may not be needed
+//  private let assetReader: AVAssetReader
+//  private let assetReaderOutput: AVAssetReaderTrackOutput
+
   private let delegate: SpeechTranscriptionRequestDelegate
   private weak var recognizer: SFSpeechRecognizer! // TODO: should be optional? not optional!
 
-  init?(forAsset asset: AVAsset, recognizer: SFSpeechRecognizer, delegate: SpeechTranscriptionRequestDelegate) {
-    self.asset = asset
-    guard case let .success((assetReader, assetReaderOutput)) = AudioUtil.createAssetReaderAndOutput(withAsset: asset) else {
-      return nil
-    }
+  init?(forAudioFile audioFile: AVAudioFile, recognizer: SFSpeechRecognizer, delegate: SpeechTranscriptionRequestDelegate) {
+    self.audioFile = audioFile
+//    guard case let .success((assetReader, assetReaderOutput)) = AudioUtil.createAssetReaderAndOutput(withAsset: asset) else {
+//      return nil
+//    }
     self.recognizer = recognizer
     self.delegate = delegate
-    self.assetReader = assetReader
-    self.assetReaderOutput = assetReaderOutput
+//    self.assetReader = assetReader
+//    self.assetReaderOutput = assetReaderOutput
     super.init()
   }
 
   public func startTranscription() -> Result<(), SpeechTranscriptionError> {
     let startTime = CFAbsoluteTimeGetCurrent()
-    let requestResult = createRequests()
-    if case let .success(requests) = requestResult {
+    switch createSpeechRecognitionRequests() {
+    case let .success(requests):
       let tasks: [TaskState] = requests.map { .unstarted($0) }
       state = .pending(tasks, startTime)
       startNextTask()
-    } else if case let .failure(error) = requestResult {
+      return .success(())
+    case let .failure(error):
       state = .failed
       return .failure(error)
     }
-    return .success(())
   }
 
   private func startNextTask() {
@@ -72,42 +75,52 @@ class FileSpeechTranscriptionRequest: NSObject, SpeechTranscriptionRequest {
     state = .pending(tasks, startTime)
   }
 
-  private func createRequests() -> Result<[SFSpeechAudioBufferRecognitionRequest], SpeechTranscriptionError> {
-    let audioAssetTracks = asset.tracks(withMediaType: .audio)
-    guard let audioAssetTrack = audioAssetTracks.last else {
-      return .failure(.invalidAsset)
-    }
-    let timeRanges = AudioUtil.splitTimeRanges(withAssetTrack: audioAssetTrack)
+  private func createSpeechRecognitionRequests() -> Result<[SFSpeechAudioBufferRecognitionRequest], SpeechTranscriptionError> {
+//    let audioAssetTracks = asset.tracks(withMediaType: .audio)
+//    guard let audioAssetTrack = audioAssetTracks.last else {
+//      return .failure(.invalidAsset)
+//    }
+//    let timeRanges = [audioAssetTrack.timeRange]
+    // TODO: let timeRanges = AudioUtil.splitTimeRanges(withAssetTrack: audioAssetTrack)
     var requests = [SFSpeechAudioBufferRecognitionRequest]()
-    for (index, timeRange) in timeRanges.enumerated() {
-      if index > 0 {
-        assetReaderOutput.reset(forReadingTimeRanges: [timeRange as NSValue])
-      } else {
-        assetReader.timeRange = timeRange
-        assetReader.startReading()
-      }
-      let request = createRequest()
-      while assetReader.status == .reading {
-        guard let sampleBuffer = assetReaderOutput.copyNextSampleBuffer() else {
-          break
-        }
-        guard CMSampleBufferIsValid(sampleBuffer), let desc = CMSampleBufferGetFormatDescription(sampleBuffer),
-          CMAudioFormatDescriptionGetStreamBasicDescription(desc) != nil else {
-          continue
-        }
-        let sampleBufferTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
-        if sampleBufferTime == .invalid || sampleBufferTime == .indefinite {
-          continue
-        }
-        request.appendAudioSampleBuffer(sampleBuffer)
-      }
+//    for (index, timeRange) in timeRanges.enumerated() {
+//      if index > 0 {
+//        assetReaderOutput.reset(forReadingTimeRanges: [timeRange as NSValue])
+//      } else {
+//        assetReader.timeRange = timeRange
+//        assetReader.startReading()
+//      }
+    let request = createSpeechRecognitionRequest()
+//      while assetReader.status == .reading {
+//        guard let sampleBuffer = assetReaderOutput.copyNextSampleBuffer() else {
+//          break
+//        }
+//        guard CMSampleBufferIsValid(sampleBuffer), let desc = CMSampleBufferGetFormatDescription(sampleBuffer),
+//          CMAudioFormatDescriptionGetStreamBasicDescription(desc) != nil else {
+//          continue
+//        }
+//        let sampleBufferTime = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
+//        if sampleBufferTime == .invalid || sampleBufferTime == .indefinite {
+//          continue
+//        }
+//
+//        request.appendAudioSampleBuffer(sampleBuffer)
+//      }
+
+    switch AudioUtil.convert(audioFile: audioFile) {
+    case let .success(audioPCMBuffer):
+      request.append(audioPCMBuffer)
       request.endAudio()
       requests.append(request)
+    case let .failure(failure):
+      print(failure)
+      return .failure(.invalidAsset)
     }
+//    }
     return .success(requests)
   }
 
-  private func createRequest() -> SFSpeechAudioBufferRecognitionRequest {
+  private func createSpeechRecognitionRequest() -> SFSpeechAudioBufferRecognitionRequest {
     let request = SFSpeechAudioBufferRecognitionRequest()
     request.shouldReportPartialResults = false
     return request
