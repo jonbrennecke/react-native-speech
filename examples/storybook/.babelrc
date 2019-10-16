@@ -6,7 +6,7 @@
     "@babel/plugin-proposal-class-properties",
     ["module-resolver", {
       "alias": {
-        "@jonbrennecke/react-native-camera": "../.."
+        "@jonbrennecke/react-native-speech": "../.."
       }
     }]
   ]

@@ -10,13 +10,13 @@ project_dir=$(cd "$dir/" 2> /dev/null && pwd -P)
 format=$(brew --prefix llvm)/bin/clang-format
 
 # .h files
-for f in $project_dir/ios/Source/**/*.h
+for f in $project_dir/ios/*.h
 do
   $format -i $f
 done
 
 # .m files
-for f in $project_dir/ios/Source/**/*.m
+for f in $project_dir/ios/*.m
 do
   $format -i $f
 done
