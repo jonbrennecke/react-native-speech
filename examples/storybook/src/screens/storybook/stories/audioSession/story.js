@@ -47,6 +47,7 @@ class StoryComponent extends PureComponent<StoryComponentProps> {
     await requestSpeechPermissions();
     await this.props.queryMedia({ mediaType: 'video', limit: 1 });
   }
+
   render() {
     const start = async () => {
       if (!this.props.assets.size) {
