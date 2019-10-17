@@ -22,58 +22,52 @@ class AudioUtil {
 
   static func generatePCMBuffers(
     fromAudioFile audioFile: AVAudioFile,
+    format: AVAudioFormat,
     _ callback: (Result<AVAudioPCMBuffer, AudioConversionFailure>) -> Void
   ) {
-    guard
-      let outputFormat = AVAudioFormat(
-        commonFormat: .pcmFormatFloat32,
-        sampleRate: 44100,
-        channels: 1,
-        interleaved: true
+    let audioFileLength = audioFile.length
+    let sampleRate = audioFile.processingFormat.sampleRate
+    let audioFileDuration = CFTimeInterval(audioFileLength) / sampleRate
+    let durationRemaining = audioFileDuration.remainder(dividingBy: 30)
+    let numberOfSplits = Int(floor(audioFileDuration / 30))
+    var splits = Array(
+      stride(from: CFTimeInterval(0), to: CFTimeInterval(numberOfSplits * 30), by: CFTimeInterval(30))
+        .map { (start: $0, duration: CFTimeInterval(30)) }
+    )
+    splits.append((start: audioFileDuration - durationRemaining, duration: audioFileDuration))
+    splits.forEach { split in
+      let (_, duration) = split
+      let frameCount = duration * sampleRate
+      let generateBufferResult = generatePCMBuffer(
+        fromAudioFile: audioFile,
+        format: format,
+        frameCount: AVAudioFrameCount(frameCount)
       )
-    else {
-      callback(.failure(.failedToCreateOutputFormat))
-      return
-    }
-    var offset: UInt32 = 0
-    let audioFileLength = AVAudioFrameCount(audioFile.length)
-    var size = AVAudioFrameCount(4096)
-    audioFile.framePosition = AVAudioFramePosition(offset)
-    while offset <= audioFile.length {
-      if audioFileLength - offset < size {
-        size = audioFileLength - size
-      }
-      guard let outputBuffer = AVAudioPCMBuffer(pcmFormat: outputFormat, frameCapacity: size) else {
-        callback(.failure(.failedToCreateOutputBuffer))
-        return
-      }
-      do {
-        try audioFile.read(into: outputBuffer, frameCount: size)
-        callback(.success(outputBuffer))
-      } catch {
-        callback(.failure(.failedWithError(error)))
-      }
-      offset += size
+      callback(generateBufferResult)
     }
   }
 
-  static func generatePCMBuffer(fromAudioFile audioFile: AVAudioFile, format: AVAudioFormat) -> Result<AVAudioPCMBuffer, AudioConversionFailure> {
+  static func generatePCMBuffer(fromAudioFile audioFile: AVAudioFile, format: AVAudioFormat, frameCount: AVAudioFrameCount) -> Result<AVAudioPCMBuffer, AudioConversionFailure> {
     guard
       let outputFormat = AVAudioFormat(
         commonFormat: format.commonFormat,
         sampleRate: audioFile.processingFormat.sampleRate,
         channels: 1,
         interleaved: true
-      ),
+      )
+    else {
+      return .failure(.failedToCreateOutputFormat)
+    }
+    guard
       let inputBuffer = AVAudioPCMBuffer(
         pcmFormat: outputFormat,
-        frameCapacity: AVAudioFrameCount(audioFile.length)
+        frameCapacity: frameCount
       )
     else {
       return .failure(.failedToCreateInputBuffer)
     }
     do {
-      try audioFile.read(into: inputBuffer)
+      try audioFile.read(into: inputBuffer, frameCount: frameCount)
       return convert(audioPCMBuffer: inputBuffer, to: format)
     } catch {
       return .failure(.failedWithError(error))
@@ -85,7 +79,7 @@ class AudioUtil {
     to outputFormat: AVAudioFormat
   ) -> Result<AVAudioPCMBuffer, AudioConversionFailure> {
     let sampleRateConversionRatio = inputBuffer.format.sampleRate / outputFormat.sampleRate
-    let frameCapacity = AVAudioFrameCount(Double(inputBuffer.frameCapacity) / sampleRateConversionRatio)
+    let frameCapacity = AVAudioFrameCount(Double(inputBuffer.frameLength) / sampleRateConversionRatio)
     guard
       let formatConverter = AVAudioConverter(from: inputBuffer.format, to: outputFormat),
       let outputBuffer = AVAudioPCMBuffer(pcmFormat: outputFormat, frameCapacity: frameCapacity)
