@@ -28,11 +28,16 @@ class AudioUtil {
     let audioFileLength = audioFile.length
     let sampleRate = audioFile.processingFormat.sampleRate
     let audioFileDuration = CFTimeInterval(audioFileLength) / sampleRate
-    let durationRemaining = audioFileDuration.remainder(dividingBy: 30)
-    let numberOfSplits = Int(floor(audioFileDuration / 30))
+    #if targetEnvironment(simulator)
+      let intervalDuration = CFTimeInterval(15)
+    #else
+      let intervalDuration = CFTimeInterval(30)
+    #endif
+    let durationRemaining = audioFileDuration.remainder(dividingBy: intervalDuration)
+    let numberOfSplits = Int(floor(audioFileDuration / intervalDuration))
     var splits = Array(
-      stride(from: CFTimeInterval(0), to: CFTimeInterval(numberOfSplits * 30), by: CFTimeInterval(30))
-        .map { (start: $0, duration: CFTimeInterval(30)) }
+      stride(from: CFTimeInterval(0), to: CFTimeInterval(numberOfSplits) * intervalDuration, by: intervalDuration)
+        .map { (start: $0, duration: intervalDuration) }
     )
     splits.append((start: audioFileDuration - durationRemaining, duration: audioFileDuration))
     splits.forEach { split in

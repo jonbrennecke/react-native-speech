@@ -26,7 +26,7 @@ type OwnProps = {};
 type StateProps = {
   speechTranscriptionAvailability: boolean,
   speechTranscriptionStatus: SpeechTranscriptionStatus,
-  selectSpeechTranscriptions: ImmutableMap<string, SpeechTranscription>,
+  speechTranscriptions: ImmutableMap<string, SpeechTranscription>,
 };
 
 type DispatchProps = {
@@ -49,7 +49,7 @@ function mapCameraStateToProps(state: ISpeechState): $Exact<StateProps> {
       state
     ),
     speechTranscriptionStatus: selectors.selectSpeechTranscriptionStatus(state),
-    selectSpeechTranscriptions: selectors.selectSpeechTranscriptions(state),
+    speechTranscriptions: selectors.selectSpeechTranscriptions(state),
   };
 }
 

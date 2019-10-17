@@ -120,6 +120,12 @@ RCT_EXPORT_MODULE(HSSpeechManager)
 RCT_EXPORT_METHOD(beginSpeechTranscriptionOfAsset
                   : (NSString *)assetID withCallback
                   : (RCTResponseSenderBlock)callback) {
+  if (!assetID) {
+    NSDictionary *error =
+        RCTMakeError(@"Missing required parameter 'assetID'.", nil, nil);
+    callback(@[ error, @(NO) ]);
+    return;
+  }
   PHFetchResult<PHAsset *> *fetchResult =
       [PHAsset fetchAssetsWithLocalIdentifiers:@[ assetID ] options:nil];
   PHAsset *asset = fetchResult.firstObject;
@@ -137,7 +143,7 @@ RCT_EXPORT_METHOD(beginSpeechTranscriptionOfAsset
                                NSDictionary *info) {
                  if (self->hasListeners) {
                    [self sendEventWithName:@"speechTranscriptionDidBegin"
-                                      body:@{@"assetID" : assetID}];
+                                      body:assetID];
                  }
                  [HSSpeechManager.sharedInstance
                      startCaptureForAsset:(AVURLAsset *)asset
@@ -155,8 +161,7 @@ RCT_EXPORT_METHOD(beginSpeechTranscriptionOfAudioSession
                   : (RCTResponseSenderBlock)callback) {
   if (hasListeners) {
     NSString *uuid = [[NSUUID UUID] UUIDString];
-    [self sendEventWithName:@"speechTranscriptionDidBegin"
-                       body:@{@"assetID" : uuid}];
+    [self sendEventWithName:@"speechTranscriptionDidBegin" body:uuid];
   }
   [HSSpeechManager.sharedInstance
       startCaptureForAudioSessionWithCallback:^(NSError *error, BOOL success) {
