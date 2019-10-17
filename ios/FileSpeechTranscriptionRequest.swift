@@ -103,7 +103,7 @@ class FileSpeechTranscriptionRequest: NSObject, SpeechTranscriptionRequest {
       return true
     }
   }
-  
+
   private func createFinalResults(with tasks: [TaskState]) -> [SFSpeechRecognitionResult] {
     var results = [SFSpeechRecognitionResult]()
     for case let .final(result) in tasks {
@@ -137,8 +137,7 @@ extension FileSpeechTranscriptionRequest: SFSpeechRecognitionTaskDelegate {
             let executionTime = CFAbsoluteTimeGetCurrent() - startTime
             delegate.speechTranscriptionRequest(didFinalizeTranscriptionResults: results, inTime: executionTime)
             delegate.speechTranscriptionRequestDidEnd()
-          }
-          else {
+          } else {
             runNextTaskAsyncronously()
           }
         }
@@ -153,8 +152,7 @@ extension FileSpeechTranscriptionRequest: SFSpeechRecognitionTaskDelegate {
         let executionTime = CFAbsoluteTimeGetCurrent() - startTime
         delegate.speechTranscriptionRequest(didFinalizeTranscriptionResults: results, inTime: executionTime)
         delegate.speechTranscriptionRequestDidEnd()
-      }
-      else {
+      } else {
         runNextTaskAsyncronously()
       }
       return
