@@ -24,9 +24,6 @@ class SpeechManager: NSObject {
     case live(LiveSpeechTranscriptionRequest)
   }
 
-  @objc(sharedInstance)
-  public static let shared = SpeechManager()
-
   @objc(HSSpeechTranscription)
   public class SpeechTranscription: NSObject {
     @objc
@@ -92,6 +89,14 @@ class SpeechManager: NSObject {
       self.init(duration: segment.duration, timestamp: segment.timestamp, confidence: segment.confidence, substring: segment.substring)
     }
   }
+
+  @objc(sharedInstance)
+  public static let shared = SpeechManager()
+
+  private let queue = DispatchQueue(
+    label: "com.jonbrennecke.HSReactNativeSpeech.SpeechManager.queue",
+    qos: .userInitiated
+  )
 
   private var state: State = .ready
   private var recognizer: SFSpeechRecognizer
@@ -191,24 +196,26 @@ class SpeechManager: NSObject {
 
   @objc
   public func startCapture(forAsset asset: AVAsset, callback _: @escaping (Error?, Bool) -> Void) {
-    AudioUtil.createTemporaryAudioFile(fromAsset: asset) { [weak self] result in
-      guard let strongSelf = self else { return }
-      guard case let .success(audioFile) = result else {
-        strongSelf.delegate?.speechManagerDidFail()
-        return
-      }
-      guard let request = FileSpeechTranscriptionRequest(
-        forAudioFile: audioFile, recognizer: strongSelf.recognizer, delegate: strongSelf
-      ) else {
-        strongSelf.delegate?.speechManagerDidFail()
-        return
-      }
-      switch request.startTranscription() {
-      case .success:
-        strongSelf.state = .pending(.file(request))
-      case .failure:
-        strongSelf.delegate?.speechManagerDidFail()
-        break
+    queue.async { [weak self] in
+      AudioUtil.createTemporaryAudioFile(fromAsset: asset) { [weak self] result in
+        guard let strongSelf = self else { return }
+        guard case let .success(audioFile) = result else {
+          strongSelf.delegate?.speechManagerDidFail()
+          return
+        }
+        guard let request = FileSpeechTranscriptionRequest(
+          forAudioFile: audioFile, recognizer: strongSelf.recognizer, delegate: strongSelf
+        ) else {
+          strongSelf.delegate?.speechManagerDidFail()
+          return
+        }
+        switch request.startTranscription() {
+        case .success:
+          strongSelf.state = .pending(.file(request))
+        case .failure:
+          strongSelf.delegate?.speechManagerDidFail()
+          break
+        }
       }
     }
   }
