@@ -7,4 +7,7 @@ export const selectors = {
 
   selectSpeechTranscriptionStatus: (state: ISpeechState) =>
     state.getSpeechTranscriptionStatus(),
+
+  selectSpeechTranscriptions: (state: ISpeechState) =>
+    state.getSpeechTranscriptions(),
 };

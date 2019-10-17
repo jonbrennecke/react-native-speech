@@ -1,13 +1,20 @@
 // @flow
+import { Map } from 'immutable';
+
 import { createReducer } from './createReducer';
 import { createSpeechState } from './speechState';
 
-import type { SpeechTranscriptionStatus, ISpeechState } from './';
+import type {
+  SpeechTranscriptionStatus,
+  SpeechTranscription,
+  ISpeechState,
+} from './';
 import type { Action } from '../types';
 
 const SpeechState = createSpeechState({
-  speechTranscriptionStatus: 'ready',
+  speechTranscriptionStatus: null,
   speechTranscriptionAvailability: true,
+  speechTranscriptions: new Map(),
 });
 
 export const initialState = new SpeechState();
@@ -31,6 +38,33 @@ const reducers = {
       return state;
     }
     return state.setSpeechTranscriptionAvailability(payload.available);
+  },
+
+  setSpeechTranscriptions: (
+    state,
+    {
+      payload,
+    }: Action<{ speechTranscriptions: Map<string, SpeechTranscription> }>
+  ): ISpeechState => {
+    if (!payload) {
+      return state;
+    }
+    return state.setSpeechTranscriptions(payload.speechTranscriptions);
+  },
+
+  setSpeechTranscription: (
+    state,
+    {
+      payload,
+    }: Action<{ key: string, speechTranscription: SpeechTranscription }>
+  ): ISpeechState => {
+    if (!payload) {
+      return state;
+    }
+    return state.setSpeechTranscription(
+      payload.key,
+      payload.speechTranscription
+    );
   },
 };
 

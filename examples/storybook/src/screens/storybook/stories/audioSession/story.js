@@ -38,7 +38,7 @@ const StoryComponent = wrapWithSpeechState(({
     const asset = assets[0];
     await beginSpeechTranscriptionOfAsset(asset.assetID);
   }
-  const disabled = speechTranscriptionStatus !== 'ready' || !speechTranscriptionAvailability;
+  const disabled = !!speechTranscriptionStatus || !speechTranscriptionAvailability;
   return (
     <SafeAreaView style={styles.center}>
       <Button

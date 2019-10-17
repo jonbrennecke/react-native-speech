@@ -137,7 +137,7 @@ RCT_EXPORT_METHOD(beginSpeechTranscriptionOfAsset
                                NSDictionary *info) {
                  if (self->hasListeners) {
                    [self sendEventWithName:@"speechTranscriptionDidBegin"
-                                      body:@{}];
+                                      body:@{@"assetID" : assetID}];
                  }
                  [HSSpeechManager.sharedInstance
                      startCaptureForAsset:(AVURLAsset *)asset
@@ -154,7 +154,9 @@ RCT_EXPORT_METHOD(beginSpeechTranscriptionOfAsset
 RCT_EXPORT_METHOD(beginSpeechTranscriptionOfAudioSession
                   : (RCTResponseSenderBlock)callback) {
   if (hasListeners) {
-    [self sendEventWithName:@"speechTranscriptionDidBegin" body:@{}];
+    NSString *uuid = [[NSUUID UUID] UUIDString];
+    [self sendEventWithName:@"speechTranscriptionDidBegin"
+                       body:@{@"assetID" : uuid}];
   }
   [HSSpeechManager.sharedInstance
       startCaptureForAudioSessionWithCallback:^(NSError *error, BOOL success) {

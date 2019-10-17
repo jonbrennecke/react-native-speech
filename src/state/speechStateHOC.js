@@ -12,22 +12,33 @@ import { actionCreators } from './speechActionCreators';
 import { selectors } from './speechSelectors';
 
 import type { ComponentType } from 'react';
+import type { Map as ImmutableMap } from 'immutable';
 
 import type { Dispatch, ReturnType, DispatchAction } from '../types';
-import type { ISpeechState, SpeechTranscriptionStatus } from './';
+import type {
+  ISpeechState,
+  SpeechTranscriptionStatus,
+  SpeechTranscription,
+} from './';
 
 type OwnProps = {};
 
 type StateProps = {
   speechTranscriptionAvailability: boolean,
   speechTranscriptionStatus: SpeechTranscriptionStatus,
+  selectSpeechTranscriptions: ImmutableMap<string, SpeechTranscription>,
 };
 
 type DispatchProps = {
   setSpeechTranscriptionAvailability: boolean => DispatchAction<any>,
+  // eslint-disable-next-line flowtype/generic-spacing
   setSpeechTranscriptionStatus: SpeechTranscriptionStatus => DispatchAction<
     any
   >,
+  setSpeechTranscription: (
+    key: string,
+    speechTranscription: SpeechTranscription
+  ) => DispatchAction<any>,
 };
 
 export type SpeechStateHOCProps = OwnProps & StateProps & DispatchProps;
@@ -38,6 +49,7 @@ function mapCameraStateToProps(state: ISpeechState): $Exact<StateProps> {
       state
     ),
     speechTranscriptionStatus: selectors.selectSpeechTranscriptionStatus(state),
+    selectSpeechTranscriptions: selectors.selectSpeechTranscriptions(state),
   };
 }
 
@@ -51,6 +63,13 @@ function mapCameraDispatchToProps(
       ),
     setSpeechTranscriptionStatus: status =>
       dispatch(actionCreators.setSpeechTranscriptionStatus({ status })),
+    setSpeechTranscription: (
+      key: string,
+      speechTranscription: SpeechTranscription
+    ) =>
+      dispatch(
+        actionCreators.setSpeechTranscription({ key, speechTranscription })
+      ),
   };
 }
 
@@ -176,20 +195,24 @@ export function createSpeechStateHOC<PassThroughProps, State: ISpeechState>(
         this.props.setSpeechTranscriptionAvailability(false);
       }
 
-      speechTranscriptionDidBegin() {
-        this.props.setSpeechTranscriptionStatus('transcribing');
+      speechTranscriptionDidBegin(assetID: string) {
+        this.props.setSpeechTranscriptionStatus({ currentAssetID: assetID });
       }
 
       speechTranscriptionDidEnd() {
-        this.props.setSpeechTranscriptionStatus('ready');
+        this.props.setSpeechTranscriptionStatus(null);
       }
 
-      speechTranscriptionDidOutput(transcription) {
-        console.log(transcription);
+      speechTranscriptionDidOutput(transcription: SpeechTranscription) {
+        const status = this.props.speechTranscriptionStatus;
+        if (status) {
+          const { currentAssetID } = status;
+          this.props.setSpeechTranscription(currentAssetID, transcription);
+        }
       }
 
       speechTranscriptionDidFail() {
-        this.props.setSpeechTranscriptionStatus('ready');
+        this.props.setSpeechTranscriptionStatus(null);
         // TODO: set error in state
         console.log('transcription failed');
       }
