@@ -46,8 +46,8 @@ class SpeechManager: NSObject {
         let string = t.formattedString
         let firstChar = String(string.prefix(1)).capitalized
         let rest = String(string.dropFirst())
-        acc += firstChar + rest
-      }
+        acc += firstChar + rest + " "
+      }.trimmingCharacters(in: .whitespacesAndNewlines)
       let segments = transcriptions.reduce(into: [SpeechTranscriptionSegment]()) { acc, t in
         let lastSegment = acc.last
         let lastTimestamp = lastSegment?.timestamp ?? 0
