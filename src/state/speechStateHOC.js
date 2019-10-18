@@ -49,7 +49,7 @@ type DispatchProps = {
     speechTranscription: SpeechTranscription
   ) => DispatchAction<any>,
   setSpeechTranscriptionError: (
-    kassetIDey: string,
+    assetID: string,
     error: SpeechTranscriptionError
   ) => DispatchAction<any>,
   setSpeechTranscriptionIDWithNoSpeechDetected: (
