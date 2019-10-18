@@ -57,17 +57,16 @@ class StoryComponent extends PureComponent<StoryComponentProps> {
       await beginSpeechTranscriptionOfAsset(asset.assetID);
     };
     var formattedString: ?string = null;
+    var noSpeechDetected = false;
+    var failedToTranscribe = false;
     if (this.props.assets.size) {
       const asset = this.props.assets.first();
       const transcription = this.props.speechTranscriptions.get(asset.assetID);
       if (transcription) {
         formattedString = transcription.formattedString;
       }
-      const error = this.props.speechTranscriptionErrors.has(asset.assetID);
-      console.log('failed to transcribe:', error);
-
-      const noSpeechDetected = this.props.speechTranscriptionIDsWithNoSpeechDetected.has(asset.assetID);
-      console.log('no speech detected:', noSpeechDetected);
+      failedToTranscribe = this.props.speechTranscriptionErrors.has(asset.assetID);
+      noSpeechDetected = this.props.speechTranscriptionIDsWithNoSpeechDetected.has(asset.assetID);
     }
     const disabled =
       !!this.props.speechTranscriptionStatus ||
@@ -80,6 +79,8 @@ class StoryComponent extends PureComponent<StoryComponentProps> {
           onPress={start}
         />
         {formattedString && <Text>{formattedString}</Text>}
+        {noSpeechDetected && <Text>Error: No speech detected</Text>}
+        {failedToTranscribe && <Text>Error: Failed to transcribe</Text>}
       </SafeAreaView>
     );
   }
@@ -89,7 +90,7 @@ const Component = wrapWithMediaState(wrapWithSpeechState(StoryComponent));
 
 const stories = storiesOf('Speech', module);
 stories.addDecorator(withKnobs);
-stories.add('Audio Session', () => (
+stories.add('Recorded Audio', () => (
   <Provider store={store}>
     <Component />
   </Provider>

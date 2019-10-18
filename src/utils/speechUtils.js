@@ -27,11 +27,10 @@ export const beginSpeechTranscriptionOfAsset = async (
   return SpeechManager.beginSpeechTranscriptionOfAssetAsync(assetID);
 };
 
-// eslint-disable-next-line flowtype/generic-spacing
-export const beginSpeechTranscriptionOfAudioSession = async (): Promise<
-  boolean
-> => {
-  return SpeechManager.beginSpeechTranscriptionOfAudioSessionAsync();
+export const beginSpeechTranscriptionOfAudioSession = async (
+  uniqueID: string
+): Promise<boolean> => {
+  return SpeechManager.beginSpeechTranscriptionOfAudioSessionAsync(uniqueID);
 };
 
 // eslint-disable-next-line flowtype/generic-spacing

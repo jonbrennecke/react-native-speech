@@ -157,11 +157,10 @@ RCT_EXPORT_METHOD(beginSpeechTranscriptionOfAsset
                }];
 }
 
-RCT_EXPORT_METHOD(beginSpeechTranscriptionOfAudioSession
+RCT_EXPORT_METHOD(beginSpeechTranscriptionOfAudioSession:(NSString*)uniqueID
                   : (RCTResponseSenderBlock)callback) {
   if (hasListeners) {
-    NSString *uuid = [[NSUUID UUID] UUIDString];
-    [self sendEventWithName:@"speechTranscriptionDidBegin" body:uuid];
+    [self sendEventWithName:@"speechTranscriptionDidBegin" body:uniqueID];
   }
   [HSSpeechManager.sharedInstance
       startCaptureForAudioSessionWithCallback:^(NSError *error, BOOL success) {
