@@ -65,8 +65,12 @@ class StoryComponent extends PureComponent<StoryComponentProps> {
       if (transcription) {
         formattedString = transcription.formattedString;
       }
-      failedToTranscribe = this.props.speechTranscriptionErrors.has(asset.assetID);
-      noSpeechDetected = this.props.speechTranscriptionIDsWithNoSpeechDetected.has(asset.assetID);
+      failedToTranscribe = this.props.speechTranscriptionErrors.has(
+        asset.assetID
+      );
+      noSpeechDetected = this.props.speechTranscriptionIDsWithNoSpeechDetected.has(
+        asset.assetID
+      );
     }
     const disabled =
       !!this.props.speechTranscriptionStatus ||

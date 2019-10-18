@@ -36,10 +36,13 @@ type StoryComponentOwnProps = {};
 type StoryComponentProps = StoryComponentOwnProps & SpeechStateHOCProps;
 
 type StoryComponentState = {
-  uniqueID: ?string;
+  uniqueID: ?string,
 };
 
-class StoryComponent extends PureComponent<StoryComponentProps, StoryComponentState> {
+class StoryComponent extends PureComponent<
+  StoryComponentProps,
+  StoryComponentState
+> {
   state = {
     uniqueID: null,
   };
@@ -67,7 +70,9 @@ class StoryComponent extends PureComponent<StoryComponentProps, StoryComponentSt
         formattedString = transcription.formattedString;
       }
       failedToTranscribe = this.props.speechTranscriptionErrors.has(uniqueID);
-      noSpeechDetected = this.props.speechTranscriptionIDsWithNoSpeechDetected.has(uniqueID);
+      noSpeechDetected = this.props.speechTranscriptionIDsWithNoSpeechDetected.has(
+        uniqueID
+      );
     }
     const isRecording = !!this.props.speechTranscriptionStatus;
     const isAvailable = this.props.speechTranscriptionAvailability;
@@ -79,11 +84,13 @@ class StoryComponent extends PureComponent<StoryComponentProps, StoryComponentSt
           title="Transcribe live audio"
           onPress={start}
         />
-        {isRecording && <Button
-          disabled={disabled}
-          title="Stop transcription"
-          onPress={stop}
-        />}
+        {isRecording && (
+          <Button
+            disabled={disabled}
+            title="Stop transcription"
+            onPress={stop}
+          />
+        )}
         {formattedString && <Text>{formattedString}</Text>}
         {noSpeechDetected && <Text>Error: No speech detected</Text>}
         {failedToTranscribe && <Text>Error: Failed to transcribe</Text>}
