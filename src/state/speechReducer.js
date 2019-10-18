@@ -47,13 +47,13 @@ const reducers = {
     state,
     {
       payload,
-    }: Action<{ key: string, speechTranscription: SpeechTranscription }>
+    }: Action<{ assetID: string, speechTranscription: SpeechTranscription }>
   ): ISpeechState => {
     if (!payload) {
       return state;
     }
     return state.setSpeechTranscription(
-      payload.key,
+      payload.assetID,
       payload.speechTranscription
     );
   },
@@ -63,7 +63,7 @@ const reducers = {
     {
       payload,
     }: Action<{
-      key: string,
+      assetID: string,
       speechTranscriptionError: SpeechTranscriptionError,
     }>
   ): ISpeechState => {
@@ -71,7 +71,7 @@ const reducers = {
       return state;
     }
     return state.setSpeechTranscriptionError(
-      payload.key,
+      payload.assetID,
       payload.speechTranscriptionError
     );
   },

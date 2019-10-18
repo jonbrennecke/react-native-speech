@@ -39,11 +39,11 @@ type DispatchProps = {
     any
   >,
   setSpeechTranscription: (
-    key: string,
+    assetID: string,
     speechTranscription: SpeechTranscription
   ) => DispatchAction<any>,
   setSpeechTranscriptionError: (
-    key: string,
+    kassetIDey: string,
     error: SpeechTranscriptionError
   ) => DispatchAction<any>,
   setSpeechTranscriptionIDWithNoSpeechDetected: (
@@ -78,19 +78,19 @@ function mapCameraDispatchToProps(
     setSpeechTranscriptionStatus: status =>
       dispatch(actionCreators.setSpeechTranscriptionStatus({ status })),
     setSpeechTranscription: (
-      key: string,
+      assetID: string,
       speechTranscription: SpeechTranscription
     ) =>
       dispatch(
-        actionCreators.setSpeechTranscription({ key, speechTranscription })
+        actionCreators.setSpeechTranscription({ assetID, speechTranscription })
       ),
     setSpeechTranscriptionError: (
-      key: string,
+      assetID: string,
       error: SpeechTranscriptionError
     ) =>
       dispatch(
         actionCreators.setSpeechTranscriptionError({
-          key,
+          assetID,
           speechTranscriptionError: error,
         })
       ),

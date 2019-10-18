@@ -61,7 +61,7 @@ export interface ISpeechState {
     speechTranscriptions: Map<string, SpeechTranscription>
   ): ISpeechState;
   setSpeechTranscription(
-    key: string,
+    assetID: string,
     speechTranscription: SpeechTranscription
   ): ISpeechState;
 
@@ -70,17 +70,15 @@ export interface ISpeechState {
     errors: Map<string, SpeechTranscriptionError>
   ): ISpeechState;
   setSpeechTranscriptionError(
-    key: string,
+    assetID: string,
     error: SpeechTranscriptionError
   ): ISpeechState;
 
   getSpeechTranscriptionIDsWithNoSpeechDetected(): Set<string>;
   setSpeechTranscriptionIDsWithNoSpeechDetected(
-    speechTranscriptionIDs: Set<string>
+    assetIDs: Set<string>
   ): ISpeechState;
-  setSpeechTranscriptionIDWithNoSpeechDetected(
-    speechTranscriptionID: string
-  ): ISpeechState;
+  setSpeechTranscriptionIDWithNoSpeechDetected(assetID: string): ISpeechState;
 }
 
 // eslint-disable-next-line flowtype/generic-spacing
@@ -117,12 +115,12 @@ export const createSpeechState: SpeechStateObject => Class<
     }
 
     setSpeechTranscription(
-      key: string,
+      assetID: string,
       speechTranscription: SpeechTranscription
     ): ISpeechState {
       const speechTranscriptions = this.getSpeechTranscriptions();
       return this.setSpeechTranscriptions(
-        speechTranscriptions.set(key, speechTranscription)
+        speechTranscriptions.set(assetID, speechTranscription)
       );
     }
 
@@ -137,11 +135,11 @@ export const createSpeechState: SpeechStateObject => Class<
     }
 
     setSpeechTranscriptionError(
-      key: string,
+      assetID: string,
       error: SpeechTranscriptionError
     ): ISpeechState {
       const errors = this.getSpeechTranscriptionErrors();
-      return this.setSpeechTranscriptionErrors(errors.set(key, error));
+      return this.setSpeechTranscriptionErrors(errors.set(assetID, error));
     }
 
     getSpeechTranscriptionIDsWithNoSpeechDetected(): Set<string> {
@@ -158,11 +156,11 @@ export const createSpeechState: SpeechStateObject => Class<
     }
 
     setSpeechTranscriptionIDWithNoSpeechDetected(
-      speechTranscriptionID: string
+      assetID: string
     ): ISpeechState {
-      const speechTranscriptionIDs = this.getSpeechTranscriptionIDsWithNoSpeechDetected();
+      const assetIDs = this.getSpeechTranscriptionIDsWithNoSpeechDetected();
       return this.setSpeechTranscriptionIDsWithNoSpeechDetected(
-        speechTranscriptionIDs.add(speechTranscriptionID)
+        assetIDs.add(assetID)
       );
     }
   };
