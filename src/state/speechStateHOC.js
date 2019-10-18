@@ -229,12 +229,12 @@ export function createSpeechStateHOC<PassThroughProps, State: ISpeechState>(
       }
 
       speechTranscriptionDidFail() {
-        this.props.setSpeechTranscriptionStatus(null);
         const status = this.props.speechTranscriptionStatus;
         if (status) {
           const { currentAssetID } = status;
           this.props.setSpeechTranscriptionError(currentAssetID, true);
         }
+        this.props.setSpeechTranscriptionStatus(null);
       }
 
       speechTranscriptionDidNotDetectSpeech() {

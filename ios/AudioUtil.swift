@@ -31,7 +31,7 @@ class AudioUtil {
     #if targetEnvironment(simulator)
       let intervalDuration = CFTimeInterval(15)
     #else
-      let intervalDuration = CFTimeInterval(30)
+      let intervalDuration = CFTimeInterval(55)
     #endif
     let durationRemaining = audioFileDuration.remainder(dividingBy: intervalDuration)
     let numberOfSplits = Int(floor(audioFileDuration / intervalDuration))
