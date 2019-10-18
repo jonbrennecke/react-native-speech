@@ -3,16 +3,19 @@ import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import identity from 'lodash/identity';
 import { autobind } from 'core-decorators';
+import { Set } from 'immutable';
 
 import {
   SpeechTranscriptionEvents,
   SpeechTranscriptionEventEmitter,
+  getCurrentLocale,
+  getSupportedLocales,
 } from '../utils';
 import { actionCreators } from './speechActionCreators';
 import { selectors } from './speechSelectors';
 
 import type { ComponentType } from 'react';
-import type { Map as ImmutableMap, Set } from 'immutable';
+import type { Map as ImmutableMap } from 'immutable';
 
 import type { Dispatch, ReturnType, DispatchAction } from '../types';
 import type {
@@ -20,6 +23,7 @@ import type {
   SpeechTranscriptionStatus,
   SpeechTranscription,
   SpeechTranscriptionError,
+  LocaleObject,
 } from './';
 
 type OwnProps = {};
@@ -30,6 +34,8 @@ type StateProps = {
   speechTranscriptions: ImmutableMap<string, SpeechTranscription>,
   speechTranscriptionErrors: ImmutableMap<string, SpeechTranscriptionError>,
   speechTranscriptionIDsWithNoSpeechDetected: Set<string>,
+  locale: ?LocaleObject,
+  supportedLocales: Set<LocaleObject>,
 };
 
 type DispatchProps = {
@@ -49,6 +55,10 @@ type DispatchProps = {
   setSpeechTranscriptionIDWithNoSpeechDetected: (
     assetID: string
   ) => DispatchAction<any>,
+  setLocale: (locale: LocaleObject) => DispatchAction<any>,
+  setSupportedLocales: (
+    supportedLocales: Set<LocaleObject>
+  ) => DispatchAction<any>,
 };
 
 export type SpeechStateHOCProps = OwnProps & StateProps & DispatchProps;
@@ -64,6 +74,8 @@ function mapCameraStateToProps(state: ISpeechState): $Exact<StateProps> {
     speechTranscriptionIDsWithNoSpeechDetected: selectors.selectSpeechTranscriptionIDsWithNoSpeechDetected(
       state
     ),
+    locale: selectors.selectLocale(state),
+    supportedLocales: selectors.selectSupportedLocales(state),
   };
 }
 
@@ -98,6 +110,18 @@ function mapCameraDispatchToProps(
       dispatch(
         actionCreators.setSpeechTranscriptionIDWithNoSpeechDetected({
           assetID,
+        })
+      ),
+    setLocale: (locale: LocaleObject) =>
+      dispatch(
+        actionCreators.setLocale({
+          locale,
+        })
+      ),
+    setSupportedLocales: (supportedLocales: Set<LocaleObject>) =>
+      dispatch(
+        actionCreators.setSupportedLocales({
+          supportedLocales,
         })
       ),
   };
@@ -151,8 +175,12 @@ export function createSpeechStateHOC<PassThroughProps, State: ISpeechState>(
         ReturnType<typeof SpeechTranscriptionEventEmitter.addListener>
       > = new Map();
 
-      componentDidMount() {
+      async componentDidMount() {
         this.addSpeechTranscriptionEventListeners();
+        const currentLocale = await getCurrentLocale();
+        this.props.setLocale(currentLocale);
+        const supportedLocales = await getSupportedLocales();
+        this.props.setSupportedLocales(Set(supportedLocales));
       }
 
       componentWillUnmount() {
@@ -209,6 +237,13 @@ export function createSpeechStateHOC<PassThroughProps, State: ISpeechState>(
             this.speechTranscriptionDidNotDetectSpeech
           )
         );
+        this.eventListeners.set(
+          'didChangeLocale',
+          SpeechTranscriptionEventEmitter.addListener(
+            SpeechTranscriptionEvents.didChangeLocale,
+            this.speechTranscriptionDidChangeLocale
+          )
+        );
       }
 
       removeSpeechTranscriptionEventListeners() {
@@ -258,6 +293,10 @@ export function createSpeechStateHOC<PassThroughProps, State: ISpeechState>(
             currentAssetID
           );
         }
+      }
+
+      speechTranscriptionDidChangeLocale(locale: LocaleObject) {
+        this.props.setLocale(locale);
       }
 
       render() {

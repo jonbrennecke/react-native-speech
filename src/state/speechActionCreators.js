@@ -1,6 +1,4 @@
 // @flow
 import { identityActionCreators } from './speechReducer';
 
-export const actionCreators = {
-  ...identityActionCreators,
-};
+export const actionCreators = identityActionCreators;

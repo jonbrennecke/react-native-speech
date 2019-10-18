@@ -2,6 +2,8 @@
 import Bluebird from 'bluebird';
 import { NativeModules, NativeEventEmitter } from 'react-native';
 
+import type { LocaleObject } from '../state';
+
 const { HSSpeechManager: NativeSpeechManager } = NativeModules;
 
 export const SpeechManager = Bluebird.promisifyAll(NativeSpeechManager);
@@ -46,4 +48,18 @@ export const requestSpeechPermissions = async (): Promise<boolean> => {
 
 export const hasSpeechPermissions = async (): Promise<boolean> => {
   return SpeechManager.hasSpeechPermissionsAsync();
+};
+
+export const getSupportedLocales = async (): Promise<LocaleObject[]> => {
+  return SpeechManager.getSupportedLocalesAsync();
+};
+
+export const getCurrentLocale = async (): Promise<LocaleObject> => {
+  return SpeechManager.getCurrentLocaleAsync();
+};
+
+export const setSpeechLocale = async (
+  localeIdentifier: string
+): Promise<boolean> => {
+  return await SpeechManager.setLocaleAsync(localeIdentifier);
 };

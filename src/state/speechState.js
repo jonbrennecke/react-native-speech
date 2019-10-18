@@ -45,6 +45,8 @@ export type SpeechStateObject = {
   speechTranscriptions: Map<string, SpeechTranscription>,
   speechTranscriptionErrors: Map<string, SpeechTranscriptionError>,
   speechTranscriptionIDsWithNoSpeechDetected: Set<string>,
+  locale: ?LocaleObject,
+  supportedLocales: Set<LocaleObject>,
 };
 
 export type SpeechStateRecord = RecordOf<SpeechStateObject>;
@@ -79,6 +81,12 @@ export interface ISpeechState {
     assetIDs: Set<string>
   ): ISpeechState;
   setSpeechTranscriptionIDWithNoSpeechDetected(assetID: string): ISpeechState;
+
+  getLocale(): ?LocaleObject;
+  setLocale(locale: LocaleObject): ISpeechState;
+
+  getSupportedLocales(): Set<LocaleObject>;
+  setSupportedLocales(supportedLocales: Set<LocaleObject>): ISpeechState;
 }
 
 // eslint-disable-next-line flowtype/generic-spacing
@@ -162,5 +170,21 @@ export const createSpeechState: SpeechStateObject => Class<
       return this.setSpeechTranscriptionIDsWithNoSpeechDetected(
         assetIDs.add(assetID)
       );
+    }
+
+    getLocale(): ?LocaleObject {
+      return this.get('locale');
+    }
+
+    setLocale(locale: LocaleObject): ISpeechState {
+      return this.set('locale', locale);
+    }
+
+    getSupportedLocales(): Set<LocaleObject> {
+      return this.get('supportedLocales');
+    }
+
+    setSupportedLocales(supportedLocales: Set<LocaleObject>): ISpeechState {
+      return this.set('supportedLocales', supportedLocales);
     }
   };

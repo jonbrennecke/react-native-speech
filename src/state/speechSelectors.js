@@ -16,4 +16,8 @@ export const selectors = {
 
   selectSpeechTranscriptionIDsWithNoSpeechDetected: (state: ISpeechState) =>
     state.getSpeechTranscriptionIDsWithNoSpeechDetected(),
+
+  selectLocale: (state: ISpeechState) => state.getLocale(),
+
+  selectSupportedLocales: (state: ISpeechState) => state.getSupportedLocales(),
 };

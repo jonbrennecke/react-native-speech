@@ -9,6 +9,7 @@ import type {
   SpeechTranscriptionError,
   SpeechTranscription,
   ISpeechState,
+  LocaleObject,
 } from './';
 import type { Action } from '../types';
 
@@ -18,6 +19,8 @@ const SpeechState = createSpeechState({
   speechTranscriptions: new Map(),
   speechTranscriptionErrors: new Map(),
   speechTranscriptionIDsWithNoSpeechDetected: new Set(),
+  locale: null,
+  supportedLocales: new Set(),
 });
 
 export const initialState = new SpeechState();
@@ -88,6 +91,34 @@ const reducers = {
       return state;
     }
     return state.setSpeechTranscriptionIDWithNoSpeechDetected(payload.assetID);
+  },
+
+  setLocale: (
+    state,
+    {
+      payload,
+    }: Action<{
+      locale: LocaleObject,
+    }>
+  ): ISpeechState => {
+    if (!payload) {
+      return state;
+    }
+    return state.setLocale(payload.locale);
+  },
+
+  setSupportedLocales: (
+    state,
+    {
+      payload,
+    }: Action<{
+      supportedLocales: Set<LocaleObject>,
+    }>
+  ): ISpeechState => {
+    if (!payload) {
+      return state;
+    }
+    return state.setSupportedLocales(payload.supportedLocales);
   },
 };
 
