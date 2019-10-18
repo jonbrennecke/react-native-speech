@@ -121,7 +121,7 @@ class FileSpeechTranscriptionRequest: NSObject, SpeechTranscriptionRequest {
 }
 
 extension FileSpeechTranscriptionRequest: SFSpeechRecognitionTaskDelegate {
-  func speechRecognitionTask(_ task: SFSpeechRecognitionTask, didFinishSuccessfully _: Bool) {
+  func speechRecognitionTask(_ task: SFSpeechRecognitionTask, didFinishSuccessfully success: Bool) {
     if let error = task.error as NSError? {
       if error.code == 203, error.localizedDescription == "Retry" {
         // NOTE: if this is not the first video ignore the retry error
@@ -158,7 +158,9 @@ extension FileSpeechTranscriptionRequest: SFSpeechRecognitionTaskDelegate {
         return
       }
     }
-    delegate.speechTranscriptionRequestDidFail()
+    else if !success {
+      delegate.speechTranscriptionRequestDidFail()
+    }
   }
 
   func speechRecognitionTaskWasCancelled(_: SFSpeechRecognitionTask) {
