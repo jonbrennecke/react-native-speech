@@ -157,7 +157,8 @@ RCT_EXPORT_METHOD(beginSpeechTranscriptionOfAsset
                }];
 }
 
-RCT_EXPORT_METHOD(beginSpeechTranscriptionOfAudioSession:(NSString*)uniqueID
+RCT_EXPORT_METHOD(beginSpeechTranscriptionOfAudioSession
+                  : (NSString *)uniqueID
                   : (RCTResponseSenderBlock)callback) {
   if (hasListeners) {
     [self sendEventWithName:@"speechTranscriptionDidBegin" body:uniqueID];
