@@ -1,5 +1,5 @@
 // @flow
-import { Map } from 'immutable';
+import { Map, Set } from 'immutable';
 
 import { createReducer } from './createReducer';
 import { createSpeechState } from './speechState';
@@ -17,6 +17,7 @@ const SpeechState = createSpeechState({
   speechTranscriptionAvailability: true,
   speechTranscriptions: new Map(),
   speechTranscriptionErrors: new Map(),
+  speechTranscriptionIDsWithNoSpeechDetected: new Set(),
 });
 
 export const initialState = new SpeechState();
@@ -73,6 +74,20 @@ const reducers = {
       payload.key,
       payload.speechTranscriptionError
     );
+  },
+
+  setSpeechTranscriptionIDWithNoSpeechDetected: (
+    state,
+    {
+      payload,
+    }: Action<{
+      assetID: string,
+    }>
+  ): ISpeechState => {
+    if (!payload) {
+      return state;
+    }
+    return state.setSpeechTranscriptionIDWithNoSpeechDetected(payload.assetID);
   },
 };
 

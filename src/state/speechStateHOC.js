@@ -12,7 +12,7 @@ import { actionCreators } from './speechActionCreators';
 import { selectors } from './speechSelectors';
 
 import type { ComponentType } from 'react';
-import type { Map as ImmutableMap } from 'immutable';
+import type { Map as ImmutableMap, Set } from 'immutable';
 
 import type { Dispatch, ReturnType, DispatchAction } from '../types';
 import type {
@@ -29,6 +29,7 @@ type StateProps = {
   speechTranscriptionStatus: SpeechTranscriptionStatus,
   speechTranscriptions: ImmutableMap<string, SpeechTranscription>,
   speechTranscriptionErrors: ImmutableMap<string, SpeechTranscriptionError>,
+  speechTranscriptionIDsWithNoSpeechDetected: Set<string>,
 };
 
 type DispatchProps = {
@@ -45,6 +46,9 @@ type DispatchProps = {
     key: string,
     error: SpeechTranscriptionError
   ) => DispatchAction<any>,
+  setSpeechTranscriptionIDWithNoSpeechDetected: (
+    assetID: string
+  ) => DispatchAction<any>,
 };
 
 export type SpeechStateHOCProps = OwnProps & StateProps & DispatchProps;
@@ -57,6 +61,9 @@ function mapCameraStateToProps(state: ISpeechState): $Exact<StateProps> {
     speechTranscriptionStatus: selectors.selectSpeechTranscriptionStatus(state),
     speechTranscriptions: selectors.selectSpeechTranscriptions(state),
     speechTranscriptionErrors: selectors.selectSpeechTranscriptionErrors(state),
+    speechTranscriptionIDsWithNoSpeechDetected: selectors.selectSpeechTranscriptionIDsWithNoSpeechDetected(
+      state
+    ),
   };
 }
 
@@ -85,6 +92,12 @@ function mapCameraDispatchToProps(
         actionCreators.setSpeechTranscriptionError({
           key,
           speechTranscriptionError: error,
+        })
+      ),
+    setSpeechTranscriptionIDWithNoSpeechDetected: (assetID: string) =>
+      dispatch(
+        actionCreators.setSpeechTranscriptionIDWithNoSpeechDetected({
+          assetID,
         })
       ),
   };
@@ -238,7 +251,13 @@ export function createSpeechStateHOC<PassThroughProps, State: ISpeechState>(
       }
 
       speechTranscriptionDidNotDetectSpeech() {
-        console.log('no speech detected');
+        const status = this.props.speechTranscriptionStatus;
+        if (status) {
+          const { currentAssetID } = status;
+          this.props.setSpeechTranscriptionIDWithNoSpeechDetected(
+            currentAssetID
+          );
+        }
       }
 
       render() {

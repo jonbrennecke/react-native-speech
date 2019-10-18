@@ -13,4 +13,7 @@ export const selectors = {
 
   selectSpeechTranscriptionErrors: (state: ISpeechState) =>
     state.getSpeechTranscriptionErrors(),
+
+  selectSpeechTranscriptionIDsWithNoSpeechDetected: (state: ISpeechState) =>
+    state.getSpeechTranscriptionIDsWithNoSpeechDetected(),
 };

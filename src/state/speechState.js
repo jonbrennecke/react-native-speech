@@ -1,7 +1,7 @@
 // @flow
 import { Record } from 'immutable';
 
-import type { RecordOf, RecordInstance, Map } from 'immutable';
+import type { RecordOf, RecordInstance, Map, Set } from 'immutable';
 
 export type SpeechTranscriptionStatus = ?{ currentAssetID: string };
 
@@ -44,7 +44,7 @@ export type SpeechStateObject = {
   speechTranscriptionAvailability: boolean,
   speechTranscriptions: Map<string, SpeechTranscription>,
   speechTranscriptionErrors: Map<string, SpeechTranscriptionError>,
-  // speechTranscriptionsWithNoSpeechDetected: Map<string, boolean>,
+  speechTranscriptionIDsWithNoSpeechDetected: Set<string>,
 };
 
 export type SpeechStateRecord = RecordOf<SpeechStateObject>;
@@ -72,6 +72,14 @@ export interface ISpeechState {
   setSpeechTranscriptionError(
     key: string,
     error: SpeechTranscriptionError
+  ): ISpeechState;
+
+  getSpeechTranscriptionIDsWithNoSpeechDetected(): Set<string>;
+  setSpeechTranscriptionIDsWithNoSpeechDetected(
+    speechTranscriptionIDs: Set<string>
+  ): ISpeechState;
+  setSpeechTranscriptionIDWithNoSpeechDetected(
+    speechTranscriptionID: string
   ): ISpeechState;
 }
 
@@ -134,5 +142,27 @@ export const createSpeechState: SpeechStateObject => Class<
     ): ISpeechState {
       const errors = this.getSpeechTranscriptionErrors();
       return this.setSpeechTranscriptionErrors(errors.set(key, error));
+    }
+
+    getSpeechTranscriptionIDsWithNoSpeechDetected(): Set<string> {
+      return this.get('speechTranscriptionIDsWithNoSpeechDetected');
+    }
+
+    setSpeechTranscriptionIDsWithNoSpeechDetected(
+      speechTranscriptionIDsWithNoSpeechDetected: Set<string>
+    ): ISpeechState {
+      return this.set(
+        'speechTranscriptionIDsWithNoSpeechDetected',
+        speechTranscriptionIDsWithNoSpeechDetected
+      );
+    }
+
+    setSpeechTranscriptionIDWithNoSpeechDetected(
+      speechTranscriptionID: string
+    ): ISpeechState {
+      const speechTranscriptionIDs = this.getSpeechTranscriptionIDsWithNoSpeechDetected();
+      return this.setSpeechTranscriptionIDsWithNoSpeechDetected(
+        speechTranscriptionIDs.add(speechTranscriptionID)
+      );
     }
   };
