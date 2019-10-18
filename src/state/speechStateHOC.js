@@ -19,6 +19,7 @@ import type {
   ISpeechState,
   SpeechTranscriptionStatus,
   SpeechTranscription,
+  SpeechTranscriptionError,
 } from './';
 
 type OwnProps = {};
@@ -27,6 +28,7 @@ type StateProps = {
   speechTranscriptionAvailability: boolean,
   speechTranscriptionStatus: SpeechTranscriptionStatus,
   speechTranscriptions: ImmutableMap<string, SpeechTranscription>,
+  speechTranscriptionErrors: ImmutableMap<string, SpeechTranscriptionError>,
 };
 
 type DispatchProps = {
@@ -39,6 +41,10 @@ type DispatchProps = {
     key: string,
     speechTranscription: SpeechTranscription
   ) => DispatchAction<any>,
+  setSpeechTranscriptionError: (
+    key: string,
+    error: SpeechTranscriptionError
+  ) => DispatchAction<any>,
 };
 
 export type SpeechStateHOCProps = OwnProps & StateProps & DispatchProps;
@@ -50,6 +56,7 @@ function mapCameraStateToProps(state: ISpeechState): $Exact<StateProps> {
     ),
     speechTranscriptionStatus: selectors.selectSpeechTranscriptionStatus(state),
     speechTranscriptions: selectors.selectSpeechTranscriptions(state),
+    speechTranscriptionErrors: selectors.selectSpeechTranscriptionErrors(state),
   };
 }
 
@@ -69,6 +76,16 @@ function mapCameraDispatchToProps(
     ) =>
       dispatch(
         actionCreators.setSpeechTranscription({ key, speechTranscription })
+      ),
+    setSpeechTranscriptionError: (
+      key: string,
+      error: SpeechTranscriptionError
+    ) =>
+      dispatch(
+        actionCreators.setSpeechTranscriptionError({
+          key,
+          speechTranscriptionError: error,
+        })
       ),
   };
 }
@@ -213,8 +230,11 @@ export function createSpeechStateHOC<PassThroughProps, State: ISpeechState>(
 
       speechTranscriptionDidFail() {
         this.props.setSpeechTranscriptionStatus(null);
-        // TODO: set error in state
-        console.log('transcription failed');
+        const status = this.props.speechTranscriptionStatus;
+        if (status) {
+          const { currentAssetID } = status;
+          this.props.setSpeechTranscriptionError(currentAssetID, true);
+        }
       }
 
       speechTranscriptionDidNotDetectSpeech() {

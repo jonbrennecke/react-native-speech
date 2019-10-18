@@ -6,6 +6,7 @@ import { createSpeechState } from './speechState';
 
 import type {
   SpeechTranscriptionStatus,
+  SpeechTranscriptionError,
   SpeechTranscription,
   ISpeechState,
 } from './';
@@ -15,6 +16,7 @@ const SpeechState = createSpeechState({
   speechTranscriptionStatus: null,
   speechTranscriptionAvailability: true,
   speechTranscriptions: new Map(),
+  speechTranscriptionErrors: new Map(),
 });
 
 export const initialState = new SpeechState();
@@ -40,18 +42,6 @@ const reducers = {
     return state.setSpeechTranscriptionAvailability(payload.available);
   },
 
-  setSpeechTranscriptions: (
-    state,
-    {
-      payload,
-    }: Action<{ speechTranscriptions: Map<string, SpeechTranscription> }>
-  ): ISpeechState => {
-    if (!payload) {
-      return state;
-    }
-    return state.setSpeechTranscriptions(payload.speechTranscriptions);
-  },
-
   setSpeechTranscription: (
     state,
     {
@@ -64,6 +54,24 @@ const reducers = {
     return state.setSpeechTranscription(
       payload.key,
       payload.speechTranscription
+    );
+  },
+
+  setSpeechTranscriptionError: (
+    state,
+    {
+      payload,
+    }: Action<{
+      key: string,
+      speechTranscriptionError: SpeechTranscriptionError,
+    }>
+  ): ISpeechState => {
+    if (!payload) {
+      return state;
+    }
+    return state.setSpeechTranscriptionError(
+      payload.key,
+      payload.speechTranscriptionError
     );
   },
 };

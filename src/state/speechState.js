@@ -37,10 +37,14 @@ export type LocaleObject = {
   },
 };
 
+export type SpeechTranscriptionError = any; // TODO
+
 export type SpeechStateObject = {
   speechTranscriptionStatus: SpeechTranscriptionStatus,
   speechTranscriptionAvailability: boolean,
   speechTranscriptions: Map<string, SpeechTranscription>,
+  speechTranscriptionErrors: Map<string, SpeechTranscriptionError>,
+  // speechTranscriptionsWithNoSpeechDetected: Map<string, boolean>,
 };
 
 export type SpeechStateRecord = RecordOf<SpeechStateObject>;
@@ -59,6 +63,15 @@ export interface ISpeechState {
   setSpeechTranscription(
     key: string,
     speechTranscription: SpeechTranscription
+  ): ISpeechState;
+
+  getSpeechTranscriptionErrors(): Map<string, SpeechTranscriptionError>;
+  setSpeechTranscriptionErrors(
+    errors: Map<string, SpeechTranscriptionError>
+  ): ISpeechState;
+  setSpeechTranscriptionError(
+    key: string,
+    error: SpeechTranscriptionError
   ): ISpeechState;
 }
 
@@ -103,5 +116,23 @@ export const createSpeechState: SpeechStateObject => Class<
       return this.setSpeechTranscriptions(
         speechTranscriptions.set(key, speechTranscription)
       );
+    }
+
+    getSpeechTranscriptionErrors(): Map<string, SpeechTranscriptionError> {
+      return this.get('speechTranscriptionErrors');
+    }
+
+    setSpeechTranscriptionErrors(
+      errors: Map<string, SpeechTranscriptionError>
+    ): ISpeechState {
+      return this.set('speechTranscriptionErrors', errors);
+    }
+
+    setSpeechTranscriptionError(
+      key: string,
+      error: SpeechTranscriptionError
+    ): ISpeechState {
+      const errors = this.getSpeechTranscriptionErrors();
+      return this.setSpeechTranscriptionErrors(errors.set(key, error));
     }
   };
