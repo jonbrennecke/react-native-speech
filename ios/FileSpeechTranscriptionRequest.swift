@@ -34,7 +34,10 @@ class FileSpeechTranscriptionRequest: NSObject, SpeechTranscriptionRequest {
     case let .success(requests):
       let tasks: [TaskState] = requests.map { .unstarted($0) }
       state = .pending(tasks, startTime)
-      runNextTaskAsyncronously()
+      if case let .failure(reason) = runNextTaskAsyncronously() {
+        print(reason)
+        delegate.speechTranscriptionRequestDidFail()
+      }
       return .success(())
     case let .failure(error):
       state = .failed
@@ -42,28 +45,32 @@ class FileSpeechTranscriptionRequest: NSObject, SpeechTranscriptionRequest {
     }
   }
 
-  private func runNextTaskAsyncronously() {
+  enum TaskError: Error {
+    case invalidState
+    case noUnstartedTasks
+  }
+
+  // TODO: change return value
+  private func runNextTaskAsyncronously() -> Result<(), TaskError> {
     guard case .pending(var tasks, let startTime) = state else {
-      state = .failed
-      return
+      return .failure(.invalidState)
     }
-    let maybeIndex = tasks.firstIndex { state in
-      guard case .unstarted = state else {
+    guard let index = tasks.firstIndex(where: { taskState in
+      guard case .unstarted = taskState else {
         return false
       }
       return true
-    }
-    guard let index = maybeIndex else {
-      state = .completed
-      return
+    }) else {
+      return .failure(.noUnstartedTasks)
     }
     guard case let .unstarted(request) = tasks[index] else {
-      state = .completed
-      return
+      return .failure(.noUnstartedTasks)
     }
+    print("starting task #\(index) of \(tasks.count)")
     let recognitionTask = recognizer.recognitionTask(with: request, delegate: self)
     tasks[index] = .pending(recognitionTask)
     state = .pending(tasks, startTime)
+    return .success(())
   }
 
   private func createSpeechRecognitionRequests() -> Result<[SFSpeechAudioBufferRecognitionRequest], SpeechTranscriptionError> {
@@ -114,7 +121,7 @@ class FileSpeechTranscriptionRequest: NSObject, SpeechTranscriptionRequest {
 }
 
 extension FileSpeechTranscriptionRequest: SFSpeechRecognitionTaskDelegate {
-  func speechRecognitionTask(_ task: SFSpeechRecognitionTask, didFinishSuccessfully success: Bool) {
+  func speechRecognitionTask(_ task: SFSpeechRecognitionTask, didFinishSuccessfully _: Bool) {
     if let error = task.error as NSError? {
       if error.code == 203, error.localizedDescription == "Retry" {
         // NOTE: if this is not the first video ignore the retry error
@@ -138,29 +145,25 @@ extension FileSpeechTranscriptionRequest: SFSpeechRecognitionTaskDelegate {
             delegate.speechTranscriptionRequest(didFinalizeTranscriptionResults: results, inTime: executionTime)
             delegate.speechTranscriptionRequestDidEnd()
           } else {
-            runNextTaskAsyncronously()
+            if case let .failure(reason) = runNextTaskAsyncronously() {
+              print(reason)
+              delegate.speechTranscriptionRequestDidFail()
+            }
           }
+          return
         }
         // TODO: check error code before sending "speechTranscriptionRequestDidNotDetectSpeech"
         delegate.speechTranscriptionRequestDidNotDetectSpeech()
         delegate.speechTranscriptionRequestDidFail()
         return
       }
-    } else if success, case let .pending(tasks, startTime) = state {
-      if allTasksAreFinalized(tasks) {
-        let results = createFinalResults(with: tasks)
-        let executionTime = CFAbsoluteTimeGetCurrent() - startTime
-        delegate.speechTranscriptionRequest(didFinalizeTranscriptionResults: results, inTime: executionTime)
-        delegate.speechTranscriptionRequestDidEnd()
-      } else {
-        runNextTaskAsyncronously()
-      }
-      return
     }
     delegate.speechTranscriptionRequestDidFail()
   }
 
-  func speechRecognitionTaskWasCancelled(_: SFSpeechRecognitionTask) {}
+  func speechRecognitionTaskWasCancelled(_: SFSpeechRecognitionTask) {
+    // TODO: need to test this case
+  }
 
   func speechRecognitionTaskFinishedReadingAudio(_: SFSpeechRecognitionTask) {}
 
@@ -169,22 +172,31 @@ extension FileSpeechTranscriptionRequest: SFSpeechRecognitionTaskDelegate {
       // TODO: invalid state
       return
     }
-    let maybeIndex = tasks.firstIndex { state in
-      guard case .pending = state else {
+    guard let index = tasks.firstIndex(where: { taskState in
+      guard case .pending = taskState else {
         return false
       }
       return true
-    }
-    guard let index = maybeIndex else {
-      // TODO: invalid state
-      return
-    }
-    guard case .pending = tasks[index] else {
-      // TODO: invalid state
+    }) else {
       return
     }
     tasks[index] = .final(result)
     state = .pending(tasks, startTime)
+    if allTasksAreFinalized(tasks) {
+      let results = createFinalResults(with: tasks)
+      let executionTime = CFAbsoluteTimeGetCurrent() - startTime
+      delegate.speechTranscriptionRequest(didFinalizeTranscriptionResults: results, inTime: executionTime)
+      delegate.speechTranscriptionRequestDidEnd()
+    } else {
+      switch runNextTaskAsyncronously() {
+      case .success:
+        fallthrough
+      case .failure(.noUnstartedTasks):
+        return
+      case .failure:
+        delegate.speechTranscriptionRequestDidFail()
+      }
+    }
   }
 
   func speechRecognitionTask(_: SFSpeechRecognitionTask, didHypothesizeTranscription _: SFTranscription) {

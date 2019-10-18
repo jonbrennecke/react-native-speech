@@ -43,11 +43,10 @@ class SpeechManager: NSObject {
 
     fileprivate convenience init(withTranscriptions transcriptions: [SFTranscription]) {
       let formattedString = transcriptions.reduce(into: "") { acc, t in
-        let string = t.formattedString
-        let firstChar = String(string.prefix(1)).capitalized
-        let rest = String(string.dropFirst())
-        acc += firstChar + rest + " "
+        acc += t.formattedString + " "
       }.trimmingCharacters(in: .whitespacesAndNewlines)
+//      let firstChar = String(string.prefix(1)).capitalized
+//      let rest = String(string.dropFirst())
       let segments = transcriptions.reduce(into: [SpeechTranscriptionSegment]()) { acc, t in
         let lastSegment = acc.last
         let lastTimestamp = lastSegment?.timestamp ?? 0
