@@ -66,7 +66,6 @@ class FileSpeechTranscriptionRequest: NSObject, SpeechTranscriptionRequest {
     guard case let .unstarted(request) = tasks[index] else {
       return .failure(.noUnstartedTasks)
     }
-    print("starting task #\(index) of \(tasks.count)")
     let recognitionTask = recognizer.recognitionTask(with: request, delegate: self)
     tasks[index] = .pending(recognitionTask)
     state = .pending(tasks, startTime)
