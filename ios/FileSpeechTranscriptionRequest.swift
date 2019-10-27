@@ -157,7 +157,7 @@ extension FileSpeechTranscriptionRequest: SFSpeechRecognitionTaskDelegate {
         return
       }
     }
-    else if !success {
+    if !success {
       delegate.speechTranscriptionRequestDidFail()
     }
   }
