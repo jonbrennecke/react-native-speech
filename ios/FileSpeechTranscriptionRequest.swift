@@ -52,7 +52,7 @@ class FileSpeechTranscriptionRequest: NSObject, SpeechTranscriptionRequest {
 
   // TODO: change return value
   private func runNextTaskAsyncronously() -> Result<(), TaskError> {
-    guard case .pending(var tasks, let startTime) = state else {
+    guard case .pending(let tasks, _) = state else {
       return .failure(.invalidState)
     }
     guard let index = tasks.firstIndex(where: { taskState in
@@ -62,6 +62,13 @@ class FileSpeechTranscriptionRequest: NSObject, SpeechTranscriptionRequest {
       return true
     }) else {
       return .failure(.noUnstartedTasks)
+    }
+    return runTaskAsynchronously(index: index)
+  }
+
+  private func runTaskAsynchronously(index: Int) -> Result<(), TaskError> {
+    guard case .pending(var tasks, let startTime) = state else {
+      return .failure(.invalidState)
     }
     guard case let .unstarted(request) = tasks[index] else {
       return .failure(.noUnstartedTasks)
@@ -74,21 +81,22 @@ class FileSpeechTranscriptionRequest: NSObject, SpeechTranscriptionRequest {
 
   private func createSpeechRecognitionRequests() -> Result<[SFSpeechAudioBufferRecognitionRequest], SpeechTranscriptionError> {
     var requests = [SFSpeechAudioBufferRecognitionRequest]()
-    AudioUtil.generatePCMBuffers(fromAudioFile: audioFile, format: createSpeechRecognitionNativeAudioFormat()) { result in
+    let nativeFormat = createSpeechRecognitionNativeAudioFormat()
+    var ret: Result<[SFSpeechAudioBufferRecognitionRequest], SpeechTranscriptionError>?
+    generatePCMBuffers(fromAudioFile: audioFile, format: nativeFormat) { result in
       switch result {
       case let .success(audioPCMBuffer):
         let request = createSpeechRecognitionRequest()
         request.append(audioPCMBuffer)
         request.endAudio()
         requests.append(request)
-      case let .failure(reason):
-        // TODO: return a failure result from main function
-//        return .failure(.invalidAsset)
-        print(reason)
+        ret = .success(requests)
+      case .failure:
+        ret = .failure(.invalidAsset)
         break
       }
     }
-    return .success(requests)
+    return ret ?? .success(requests)
   }
 
   private func createSpeechRecognitionRequest() -> SFSpeechAudioBufferRecognitionRequest {
@@ -123,31 +131,18 @@ extension FileSpeechTranscriptionRequest: SFSpeechRecognitionTaskDelegate {
   func speechRecognitionTask(_ task: SFSpeechRecognitionTask, didFinishSuccessfully success: Bool) {
     if let error = task.error as NSError? {
       if error.code == 203, error.localizedDescription == "Retry" {
-        // NOTE: if this is not the first video ignore the retry error
-        // (e.g. if the video is just slightly longer than the cutoff duration, the 2nd segment will commonly have no speech
-        if case .pending(var tasks, let startTime) = state, tasks.count > 1 {
-          let maybeIndex = tasks.firstIndex { state in
+        if case .pending(let tasks, _) = state, tasks.count > 1 {
+          guard let index = tasks.firstIndex(where: { state in
             if case let .pending(t) = state, t == task {
               return true
             }
             return false
-          }
-          guard let index = maybeIndex else {
-            // TODO: this case is unhandled
+          }) else {
+            delegate.speechTranscriptionRequestDidFail()
             return
           }
-          tasks.remove(at: index)
-          state = .pending(tasks, startTime)
-          if allTasksAreFinalized(tasks) {
-            let results = createFinalResults(with: tasks)
-            let executionTime = CFAbsoluteTimeGetCurrent() - startTime
-            delegate.speechTranscriptionRequest(didFinalizeTranscriptionResults: results, inTime: executionTime)
-            delegate.speechTranscriptionRequestDidEnd()
-          } else {
-            if case let .failure(reason) = runNextTaskAsyncronously() {
-              print(reason)
-              delegate.speechTranscriptionRequestDidFail()
-            }
+          if case .failure = runTaskAsynchronously(index: index) {
+            delegate.speechTranscriptionRequestDidFail()
           }
           return
         }

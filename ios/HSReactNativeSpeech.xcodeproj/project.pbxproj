@@ -13,7 +13,7 @@
 		FC1FC2BB23568FC40014BEA2 /* LiveSpeechTranscriptionRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC1FC2BA23568FC40014BEA2 /* LiveSpeechTranscriptionRequest.swift */; };
 		FC1FC2BD23568FE40014BEA2 /* HSSpeechBridgeModule.m in Sources */ = {isa = PBXBuildFile; fileRef = FC1FC2BC23568FE40014BEA2 /* HSSpeechBridgeModule.m */; };
 		FC1FC2C0235690640014BEA2 /* LocaleUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = FC1FC2BF235690640014BEA2 /* LocaleUtil.m */; };
-		FCEC207E23569AD300D12CC0 /* AudioUtil.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCEC207D23569AD300D12CC0 /* AudioUtil.swift */; };
+		FCEC207E23569AD300D12CC0 /* audioUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCEC207D23569AD300D12CC0 /* audioUtils.swift */; };
 		FCEC20802357A87F00D12CC0 /* fileUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCEC207F2357A87F00D12CC0 /* fileUtils.swift */; };
 /* End PBXBuildFile section */
 
@@ -39,7 +39,7 @@
 		FC1FC2BE23568FFC0014BEA2 /* HSSpeechBridgeModule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = HSSpeechBridgeModule.h; sourceTree = "<group>"; };
 		FC1FC2BF235690640014BEA2 /* LocaleUtil.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LocaleUtil.m; sourceTree = "<group>"; };
 		FC1FC2C12356907C0014BEA2 /* LocaleUtil.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LocaleUtil.h; sourceTree = "<group>"; };
-		FCEC207D23569AD300D12CC0 /* AudioUtil.swift */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = AudioUtil.swift; sourceTree = "<group>"; tabWidth = 2; };
+		FCEC207D23569AD300D12CC0 /* audioUtils.swift */ = {isa = PBXFileReference; indentWidth = 2; lastKnownFileType = sourcecode.swift; path = audioUtils.swift; sourceTree = "<group>"; tabWidth = 2; };
 		FCEC207F2357A87F00D12CC0 /* fileUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = fileUtils.swift; sourceTree = "<group>"; };
 		FCFC983A22AC7CD20089D452 /* HSReactNativeSpeech-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "HSReactNativeSpeech-Bridging-Header.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -83,7 +83,7 @@
 				FC1FC2BE23568FFC0014BEA2 /* HSSpeechBridgeModule.h */,
 				FC1FC2BF235690640014BEA2 /* LocaleUtil.m */,
 				FC1FC2C12356907C0014BEA2 /* LocaleUtil.h */,
-				FCEC207D23569AD300D12CC0 /* AudioUtil.swift */,
+				FCEC207D23569AD300D12CC0 /* audioUtils.swift */,
 				FCEC207F2357A87F00D12CC0 /* fileUtils.swift */,
 			);
 			name = Source;
@@ -149,7 +149,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FCEC207E23569AD300D12CC0 /* AudioUtil.swift in Sources */,
+				FCEC207E23569AD300D12CC0 /* audioUtils.swift in Sources */,
 				FC1FC2BD23568FE40014BEA2 /* HSSpeechBridgeModule.m in Sources */,
 				FC1FC2BB23568FC40014BEA2 /* LiveSpeechTranscriptionRequest.swift in Sources */,
 				FCEC20802357A87F00D12CC0 /* fileUtils.swift in Sources */,

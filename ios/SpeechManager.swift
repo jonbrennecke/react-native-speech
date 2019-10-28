@@ -196,7 +196,7 @@ class SpeechManager: NSObject {
   @objc
   public func startCapture(forAsset asset: AVAsset, callback _: @escaping (Error?, Bool) -> Void) {
     queue.async { [weak self] in
-      AudioUtil.createTemporaryAudioFile(fromAsset: asset) { [weak self] result in
+      createTemporaryAudioFile(fromAsset: asset) { [weak self] result in
         guard let strongSelf = self else { return }
         guard case let .success(audioFile) = result else {
           strongSelf.delegate?.speechManagerDidFail()

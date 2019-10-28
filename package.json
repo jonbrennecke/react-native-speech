@@ -32,7 +32,7 @@
     "@jonbrennecke/react-native-media": "^1.0.18"
   },
   "repository": {
-    "url": "https://github.com/jonbrennecke/react-native-camera",
+    "url": "https://github.com/jonbrennecke/react-native-speech",
     "type": "git"
   },
   "devDependencies": {

@@ -86,7 +86,7 @@ class StoryComponent extends PureComponent<
         />
         {isRecording && (
           <Button
-            disabled={disabled}
+            disabled={!isRecording || !isAvailable}
             title="Stop transcription"
             onPress={stop}
           />
