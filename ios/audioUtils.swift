@@ -63,9 +63,10 @@ fileprivate func getIntervalDuration() -> CFTimeInterval {
   #if targetEnvironment(simulator)
     return CFTimeInterval(15)
   #else
-    return UIDevice.current.name.contains("iPhone 6")
-      ? CFTimeInterval(15)
-      : CFTimeInterval(55)
+    return CFTimeInterval(15)
+//  UIDevice.current.name.contains("iPhone 6")
+//      ? CFTimeInterval(15)
+//      : CFTimeInterval(55)
   #endif
 }
 
