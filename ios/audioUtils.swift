@@ -34,12 +34,13 @@ func generatePCMBuffers(
     stride(from: CFTimeInterval(0), to: CFTimeInterval(numberOfSplits) * intervalDuration, by: intervalDuration)
       .map { (start: $0, duration: intervalDuration) }
   )
-  splits.append((start: audioFileDuration - durationRemaining, duration: audioFileDuration))
+  splits.append((start: audioFileDuration - durationRemaining, duration: durationRemaining))
   splits.forEach { split in
-    let (_, duration) = split
+    let (start, duration) = split
     let generateBufferResult = generatePCMBuffer(
       fromAudioFile: audioFile,
       format: format,
+      start: start,
       duration: duration
     )
     callback(generateBufferResult)
@@ -59,6 +60,7 @@ fileprivate func getIntervalDuration() -> CFTimeInterval {
 fileprivate func generatePCMBuffer(
   fromAudioFile audioFile: AVAudioFile,
   format: AVAudioFormat,
+  start: CFTimeInterval,
   duration: CFTimeInterval
 ) -> Result<AVAudioPCMBuffer, AudioConversionFailure> {
   let audioFileSampleRate = audioFile.processingFormat.sampleRate
@@ -72,6 +74,7 @@ fileprivate func generatePCMBuffer(
     return .failure(.failedToCreateInputBuffer)
   }
   do {
+    audioFile.framePosition = AVAudioFramePosition(start * audioFileSampleRate)
     try audioFile.read(into: inputBuffer, frameCount: frameCount)
     return convert(audioPCMBuffer: inputBuffer, to: format)
   } catch {
