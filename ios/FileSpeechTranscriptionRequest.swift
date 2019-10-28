@@ -80,23 +80,20 @@ class FileSpeechTranscriptionRequest: NSObject, SpeechTranscriptionRequest {
   }
 
   private func createSpeechRecognitionRequests() -> Result<[SFSpeechAudioBufferRecognitionRequest], SpeechTranscriptionError> {
-    var requests = [SFSpeechAudioBufferRecognitionRequest]()
     let nativeFormat = createSpeechRecognitionNativeAudioFormat()
-    var ret: Result<[SFSpeechAudioBufferRecognitionRequest], SpeechTranscriptionError>?
-    generatePCMBuffers(fromAudioFile: audioFile, format: nativeFormat) { result in
-      switch result {
-      case let .success(audioPCMBuffer):
+    switch generatePCMBuffers(fromAudioFile: audioFile, format: nativeFormat) {
+    case let .success(audioPCMBuffers):
+      var requests = [SFSpeechAudioBufferRecognitionRequest]()
+      for audioPCMBuffer in audioPCMBuffers {
         let request = createSpeechRecognitionRequest()
         request.append(audioPCMBuffer)
         request.endAudio()
         requests.append(request)
-        ret = .success(requests)
-      case .failure:
-        ret = .failure(.invalidAsset)
-        break
       }
+      return .success(requests)
+    case .failure:
+      return .failure(.invalidAsset)
     }
-    return ret ?? .success(requests)
   }
 
   private func createSpeechRecognitionRequest() -> SFSpeechAudioBufferRecognitionRequest {

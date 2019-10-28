@@ -21,9 +21,8 @@ enum AudioConversionFailure: Error {
 
 func generatePCMBuffers(
   fromAudioFile audioFile: AVAudioFile,
-  format: AVAudioFormat,
-  _ callback: (Result<AVAudioPCMBuffer, AudioConversionFailure>) -> Void
-) {
+  format: AVAudioFormat
+) -> Result<[AVAudioPCMBuffer], AudioConversionFailure> {
   let audioFileLength = audioFile.length
   let audioFileSampleRate = audioFile.processingFormat.sampleRate
   let audioFileDuration = CFTimeInterval(audioFileLength) / audioFileSampleRate
@@ -35,15 +34,26 @@ func generatePCMBuffers(
       .map { (start: $0, duration: intervalDuration) }
   )
   splits.append((start: audioFileDuration - durationRemaining, duration: durationRemaining))
-  splits.forEach { split in
+  let x = splits.map { (split: (CFTimeInterval, CFTimeInterval)) -> Result<AVAudioPCMBuffer, AudioConversionFailure> in
     let (start, duration) = split
-    let generateBufferResult = generatePCMBuffer(
+    return generatePCMBuffer(
       fromAudioFile: audioFile,
       format: format,
       start: start,
       duration: duration
     )
-    callback(generateBufferResult)
+  }
+  return x.reduce(into: .success([])) { acc, result in
+    guard case var .success(array) = acc else {
+      return
+    }
+    switch result {
+    case let .failure(failure):
+      acc = .failure(failure)
+    case let .success(buffer):
+      array.append(buffer)
+      acc = .success(array)
+    }
   }
 }
 
