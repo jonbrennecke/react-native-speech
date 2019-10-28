@@ -33,8 +33,10 @@ func generatePCMBuffers(
     stride(from: CFTimeInterval(0), to: CFTimeInterval(numberOfSplits) * intervalDuration, by: intervalDuration)
       .map { (start: $0, duration: intervalDuration) }
   )
-  splits.append((start: audioFileDuration - durationRemaining, duration: durationRemaining))
-  let x = splits.map { (split: (CFTimeInterval, CFTimeInterval)) -> Result<AVAudioPCMBuffer, AudioConversionFailure> in
+  if durationRemaining > 0 {
+    splits.append((start: audioFileDuration - durationRemaining, duration: durationRemaining))
+  }
+  let audioBufferResults = splits.map { (split: (CFTimeInterval, CFTimeInterval)) -> Result<AVAudioPCMBuffer, AudioConversionFailure> in
     let (start, duration) = split
     return generatePCMBuffer(
       fromAudioFile: audioFile,
@@ -43,7 +45,7 @@ func generatePCMBuffers(
       duration: duration
     )
   }
-  return x.reduce(into: .success([])) { acc, result in
+  return audioBufferResults.reduce(into: .success([])) { acc, result in
     guard case var .success(array) = acc else {
       return
     }

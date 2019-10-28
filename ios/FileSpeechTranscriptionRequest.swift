@@ -34,14 +34,31 @@ class FileSpeechTranscriptionRequest: NSObject, SpeechTranscriptionRequest {
     case let .success(requests):
       let tasks: [TaskState] = requests.map { .unstarted($0) }
       state = .pending(tasks, startTime)
-      if case let .failure(reason) = runNextTaskAsyncronously() {
-        print(reason)
+      if case .failure = runNextTaskAsyncronously() {
         delegate.speechTranscriptionRequestDidFail()
+        return .failure(.invalidState)
       }
       return .success(())
     case let .failure(error):
       state = .failed
       return .failure(error)
+    }
+  }
+  
+  private func createSpeechRecognitionRequests() -> Result<[SFSpeechAudioBufferRecognitionRequest], SpeechTranscriptionError> {
+    let nativeFormat = createSpeechRecognitionNativeAudioFormat()
+    switch generatePCMBuffers(fromAudioFile: audioFile, format: nativeFormat) {
+    case let .success(audioPCMBuffers):
+      var requests = [SFSpeechAudioBufferRecognitionRequest]()
+      for audioPCMBuffer in audioPCMBuffers {
+        let request = createSpeechRecognitionRequest()
+        request.append(audioPCMBuffer)
+        request.endAudio()
+        requests.append(request)
+      }
+      return .success(requests)
+    case .failure:
+      return .failure(.invalidAsset)
     }
   }
 
@@ -50,7 +67,6 @@ class FileSpeechTranscriptionRequest: NSObject, SpeechTranscriptionRequest {
     case noUnstartedTasks
   }
 
-  // TODO: change return value
   private func runNextTaskAsyncronously() -> Result<(), TaskError> {
     guard case .pending(let tasks, _) = state else {
       return .failure(.invalidState)
@@ -77,23 +93,6 @@ class FileSpeechTranscriptionRequest: NSObject, SpeechTranscriptionRequest {
     tasks[index] = .pending(recognitionTask)
     state = .pending(tasks, startTime)
     return .success(())
-  }
-
-  private func createSpeechRecognitionRequests() -> Result<[SFSpeechAudioBufferRecognitionRequest], SpeechTranscriptionError> {
-    let nativeFormat = createSpeechRecognitionNativeAudioFormat()
-    switch generatePCMBuffers(fromAudioFile: audioFile, format: nativeFormat) {
-    case let .success(audioPCMBuffers):
-      var requests = [SFSpeechAudioBufferRecognitionRequest]()
-      for audioPCMBuffer in audioPCMBuffers {
-        let request = createSpeechRecognitionRequest()
-        request.append(audioPCMBuffer)
-        request.endAudio()
-        requests.append(request)
-      }
-      return .success(requests)
-    case .failure:
-      return .failure(.invalidAsset)
-    }
   }
 
   private func createSpeechRecognitionRequest() -> SFSpeechAudioBufferRecognitionRequest {
