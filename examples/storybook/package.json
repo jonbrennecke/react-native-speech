@@ -20,7 +20,7 @@
   "dependencies": {
     "@jonbrennecke/react-native-media": "1.0.18",
     "@jonbrennecke/react-native-speech": "../../",
-    "lodash": "4.17.11",
+    "lodash": "4.17.13",
     "react": "16.6.3",
     "react-native": "0.59.9",
     "react-redux": "5.0.7",
