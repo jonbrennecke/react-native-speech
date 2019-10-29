@@ -49,22 +49,30 @@ class FileSpeechTranscriptionRequest: NSObject, SpeechTranscriptionRequest {
       return .failure(error)
     }
   }
-  
+
   private func createSpeechRecognitionRequests() -> Result<[SFSpeechAudioBufferRecognitionRequest], SpeechTranscriptionError> {
     let nativeFormat = createSpeechRecognitionNativeAudioFormat()
-    switch generatePCMBuffers(fromAudioFile: audioFile, format: nativeFormat) {
-    case let .success(audioPCMBuffers):
-      var requests = [SFSpeechAudioBufferRecognitionRequest]()
-      for audioPCMBuffer in audioPCMBuffers {
+    var requests = [SFSpeechAudioBufferRecognitionRequest]()
+    let intervals = makeIntervals(forSplitting: audioFile, intervalDuration: 15)
+    for interval in intervals {
+      let (start, duration) = interval
+      let result = generateFixedLengthPCMBuffers(
+        audioFile: audioFile,
+        format: nativeFormat,
+        start: start,
+        duration: duration
+      )
+      switch result {
+      case let .success(audioPCMBuffers):
         let request = createSpeechRecognitionRequest()
-        request.append(audioPCMBuffer)
+        audioPCMBuffers.forEach { request.append($0) }
         request.endAudio()
         requests.append(request)
+      case .failure:
+        return .failure(.invalidAsset)
       }
-      return .success(requests)
-    case .failure:
-      return .failure(.invalidAsset)
     }
+    return .success(requests)
   }
 
   private func runNextTaskAsyncronously() -> Result<(), TaskError> {
@@ -112,7 +120,7 @@ class FileSpeechTranscriptionRequest: NSObject, SpeechTranscriptionRequest {
       return .failure(error)
     }
   }
-  
+
   private func createSpeechRecognitionRequest() -> SFSpeechAudioBufferRecognitionRequest {
     let request = SFSpeechAudioBufferRecognitionRequest()
     request.shouldReportPartialResults = false

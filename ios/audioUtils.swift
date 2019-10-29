@@ -19,76 +19,70 @@ enum AudioConversionFailure: Error {
   case missingAudioTrack
 }
 
-func generatePCMBuffers(
-  fromAudioFile audioFile: AVAudioFile,
-  format: AVAudioFormat
-) -> Result<[AVAudioPCMBuffer], AudioConversionFailure> {
+func makeIntervals(forSplitting audioFile: AVAudioFile, intervalDuration: CFTimeInterval) -> [(start: CFTimeInterval, duration: CFTimeInterval)] {
   let audioFileLength = audioFile.length
   let audioFileSampleRate = audioFile.processingFormat.sampleRate
   let audioFileDuration = CFTimeInterval(audioFileLength) / audioFileSampleRate
-  let intervalDuration = getIntervalDuration()
-  let durationRemaining = max(audioFileDuration.remainder(dividingBy: intervalDuration), 0)
   let numberOfSplits = Int(floor(audioFileDuration / intervalDuration))
   var splits = Array(
     stride(from: CFTimeInterval(0), to: CFTimeInterval(numberOfSplits) * intervalDuration, by: intervalDuration)
-      .map { (start: $0, duration: intervalDuration) }
+      .map { (start: $0, duration: min(intervalDuration, audioFileDuration)) }
   )
+  let durationRemaining = audioFileDuration.remainder(dividingBy: intervalDuration)
   if durationRemaining > 0 {
     splits.append((start: audioFileDuration - durationRemaining, duration: durationRemaining))
+  } else if durationRemaining < 0 {
+    let duration = audioFileDuration - intervalDuration * CFTimeInterval(numberOfSplits)
+    splits.append((start: audioFileDuration - duration, duration: duration))
   }
-  let audioBufferResults = splits.map { (split: (CFTimeInterval, CFTimeInterval)) -> Result<AVAudioPCMBuffer, AudioConversionFailure> in
-    let (start, duration) = split
-    return generatePCMBuffer(
-      fromAudioFile: audioFile,
-      format: format,
-      start: start,
-      duration: duration
-    )
-  }
-  return audioBufferResults.reduce(into: .success([])) { acc, result in
-    guard case var .success(array) = acc else {
-      return
-    }
-    switch result {
-    case let .failure(failure):
-      acc = .failure(failure)
-    case let .success(buffer):
-      array.append(buffer)
-      acc = .success(array)
-    }
-  }
+  return splits
 }
 
-fileprivate func getIntervalDuration() -> CFTimeInterval {
-  #if targetEnvironment(simulator)
-    return CFTimeInterval(15)
-  #else
-    return CFTimeInterval(15)
-//  UIDevice.current.name.contains("iPhone 6")
-//      ? CFTimeInterval(15)
-//      : CFTimeInterval(55)
-  #endif
+func generateFixedLengthPCMBuffers(
+  audioFile: AVAudioFile,
+  format: AVAudioFormat,
+  start: CFTimeInterval,
+  duration: CFTimeInterval,
+  bufferFrameCount: Int = 1024
+) -> Result<[AVAudioPCMBuffer], AudioConversionFailure> {
+  let audioFileSampleRate = audioFile.processingFormat.sampleRate
+  let startFramePosition = Int(start * audioFileSampleRate)
+  let endFramePosition = Int((start + duration) * audioFileSampleRate)
+  var buffers = [AVAudioPCMBuffer]()
+  for framePosition in stride(from: startFramePosition, to: endFramePosition, by: Int(bufferFrameCount)) {
+    switch generatePCMBuffer(
+      fromAudioFile: audioFile,
+      format: format,
+      framePosition: AVAudioFramePosition(framePosition),
+      frameCount: AVAudioFrameCount(bufferFrameCount)
+    ) {
+    case let .success(buffer):
+      buffers.append(buffer)
+    case let .failure(error):
+      return .failure(error)
+    }
+  }
+  return .success(buffers)
 }
 
 fileprivate func generatePCMBuffer(
   fromAudioFile audioFile: AVAudioFile,
   format: AVAudioFormat,
-  start: CFTimeInterval,
-  duration: CFTimeInterval
+  framePosition: AVAudioFramePosition,
+  frameCount: AVAudioFrameCount
 ) -> Result<AVAudioPCMBuffer, AudioConversionFailure> {
-  let audioFileSampleRate = audioFile.processingFormat.sampleRate
-  let frameCount = AVAudioFrameCount(duration * audioFileSampleRate)
+  let readFrameCount = min(frameCount, AVAudioFrameCount(audioFile.length - framePosition))
   guard
     let inputBuffer = AVAudioPCMBuffer(
       pcmFormat: audioFile.processingFormat,
-      frameCapacity: frameCount
+      frameCapacity: readFrameCount
     )
   else {
     return .failure(.failedToCreateInputBuffer)
   }
   do {
-    audioFile.framePosition = AVAudioFramePosition(start * audioFileSampleRate)
-    try audioFile.read(into: inputBuffer, frameCount: frameCount)
+    audioFile.framePosition = framePosition
+    try audioFile.read(into: inputBuffer, frameCount: readFrameCount)
     return convert(audioPCMBuffer: inputBuffer, to: format)
   } catch {
     return .failure(.failedWithError(error))
@@ -144,7 +138,7 @@ func createTemporaryAudioFile(
       let audioFile = try? AVAudioFile(
         forReading: outputURL,
         commonFormat: .pcmFormatInt16,
-        interleaved: true
+        interleaved: false
       )
     else {
       return completionHandler(.failure(.failedToExportAudioFile))
