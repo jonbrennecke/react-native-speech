@@ -93,7 +93,9 @@ extension LiveSpeechTranscriptionRequest: SFSpeechRecognitionTaskDelegate {
     delegate.speechTranscriptionRequestDidFail()
   }
 
-  func speechRecognitionTaskWasCancelled(_: SFSpeechRecognitionTask) {}
+  func speechRecognitionTaskWasCancelled(_: SFSpeechRecognitionTask) {
+    delegate.speechTranscriptionRequestDidEnd()
+  }
 
   func speechRecognitionTaskFinishedReadingAudio(_: SFSpeechRecognitionTask) {}
 

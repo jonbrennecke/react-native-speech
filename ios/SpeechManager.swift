@@ -179,11 +179,12 @@ class SpeechManager: NSObject {
 
   @objc
   public func startCaptureForAudioSession(callback: @escaping (Error?, Bool) -> Void) {
-    SpeechManager.operationQueue.addOperation {
-      let request = LiveSpeechTranscriptionRequest(audioEngine: self.audioEngine, recognizer: self.recognizer, delegate: self)
+    queue.async { [weak self] in
+      guard let strongSelf = self, case .ready = strongSelf.state else { return }
+      let request = LiveSpeechTranscriptionRequest(audioEngine: strongSelf.audioEngine, recognizer: strongSelf.recognizer, delegate: strongSelf)
       switch request.startTranscription() {
       case .success:
-        self.state = .pending(.live(request))
+        strongSelf.state = .pending(.live(request))
         callback(nil, true)
         break
       case let .failure(error):
@@ -196,6 +197,7 @@ class SpeechManager: NSObject {
   @objc
   public func startCapture(forAsset asset: AVAsset, callback _: @escaping (Error?, Bool) -> Void) {
     queue.async { [weak self] in
+      guard let strongSelf = self, case .ready = strongSelf.state else { return }
       createTemporaryAudioFile(fromAsset: asset) { [weak self] result in
         guard let strongSelf = self else { return }
         guard case let .success(audioFile) = result else {
@@ -224,7 +226,9 @@ class SpeechManager: NSObject {
     guard case let .pending(.live(request)) = state else {
       return
     }
-    _ = request.stopTranscription()
+    if case .failure(_) = request.stopTranscription() {
+      delegate?.speechManagerDidFail()
+    }
   }
 }
 
