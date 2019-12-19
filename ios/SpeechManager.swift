@@ -14,10 +14,6 @@ protocol SpeechManagerDelegate {
 
 @objc(HSSpeechManager)
 class SpeechManager: NSObject {
-  private enum State {
-    case ready
-    case pending(SpeechTranscriptionRequestKind)
-  }
 
   private enum SpeechTranscriptionRequestKind {
     case file(FileSpeechTranscriptionRequest)
@@ -45,8 +41,6 @@ class SpeechManager: NSObject {
       let formattedString = transcriptions.reduce(into: "") { acc, t in
         acc += t.formattedString + " "
       }.trimmingCharacters(in: .whitespacesAndNewlines)
-//      let firstChar = String(string.prefix(1)).capitalized
-//      let rest = String(string.dropFirst())
       let segments = transcriptions.reduce(into: [SpeechTranscriptionSegment]()) { acc, t in
         let lastSegment = acc.last
         let lastTimestamp = lastSegment?.timestamp ?? 0
@@ -97,9 +91,8 @@ class SpeechManager: NSObject {
     qos: .userInitiated
   )
 
-  private var state: State = .ready
+  private var pendingSpeechTranscriptionRequest: SpeechTranscriptionRequestKind?
   private var recognizer: SFSpeechRecognizer
-  private var task: SFSpeechRecognitionTask?
   private var audioEngine: AVAudioEngine
   private static let operationQueue = OperationQueue()
 
@@ -113,9 +106,6 @@ class SpeechManager: NSObject {
 
   @objc(setLocale:)
   public func set(locale: Locale) -> Bool {
-    guard case .ready = state else {
-      return false
-    }
     let recognizer = SpeechManager.createSpeechRecognizer(locale: locale)
     self.recognizer = recognizer
     delegate?.speechManagerDidChangeLocale(locale)
@@ -180,11 +170,11 @@ class SpeechManager: NSObject {
   @objc
   public func startCaptureForAudioSession(callback: @escaping (Error?, Bool) -> Void) {
     queue.async { [weak self] in
-      guard let strongSelf = self, case .ready = strongSelf.state else { return }
+      guard let strongSelf = self else { return }
       let request = LiveSpeechTranscriptionRequest(audioEngine: strongSelf.audioEngine, recognizer: strongSelf.recognizer, delegate: strongSelf)
       switch request.startTranscription() {
       case .success:
-        strongSelf.state = .pending(.live(request))
+        strongSelf.pendingSpeechTranscriptionRequest = .live(request)
         callback(nil, true)
         break
       case let .failure(error):
@@ -197,7 +187,7 @@ class SpeechManager: NSObject {
   @objc
   public func startCapture(forAsset asset: AVAsset, callback _: @escaping (Error?, Bool) -> Void) {
     queue.async { [weak self] in
-      guard let strongSelf = self, case .ready = strongSelf.state else { return }
+      guard let strongSelf = self else { return }
       createTemporaryAudioFile(fromAsset: asset) { [weak self] result in
         guard let strongSelf = self else { return }
         guard case let .success(audioFile) = result else {
@@ -212,7 +202,7 @@ class SpeechManager: NSObject {
         }
         switch request.startTranscription() {
         case .success:
-          strongSelf.state = .pending(.file(request))
+          strongSelf.pendingSpeechTranscriptionRequest = .file(request)
         case .failure:
           strongSelf.delegate?.speechManagerDidFail()
           break
@@ -223,7 +213,7 @@ class SpeechManager: NSObject {
 
   @objc
   public func stopCaptureForAudioSession() {
-    guard case let .pending(.live(request)) = state else {
+    guard case let .live(request) = pendingSpeechTranscriptionRequest else {
       return
     }
     if case .failure(_) = request.stopTranscription() {
@@ -260,7 +250,6 @@ extension SpeechManager: SpeechTranscriptionRequestDelegate {
     let transcriptions = results.map { $0.bestTranscription }
     let transcription = SpeechTranscription(withTranscriptions: transcriptions)
     delegate?.speechManagerDidReceiveSpeechTranscription(isFinal: true, transcription: transcription)
-    state = .ready
   }
 
   func speechTranscriptionRequest(didHypothesizeTranscriptions transcriptions: [SFTranscription]) {
