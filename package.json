@@ -43,7 +43,7 @@
     "@jonbrennecke/react-native-media": "^1.0.18",
     "babel-core": "7.0.0-bridge.0",
     "babel-jest": "23.6.0",
-    "babel-loader": "7.1.5",
+    "babel-loader": "9.1.0",
     "eslint": "4.19.1",
     "eslint-config-prettier": "2.9.0",
     "eslint-config-react-native": "2.0.0",
@@ -57,15 +57,15 @@
     "flow-bin": "^0.78.0",
     "flow-copy-source": "^2.0.6",
     "flow-typed": "^2.5.1",
-    "jest": "23.6.0",
+    "jest": "29.3.1",
     "lodash.noop": "3.0.1",
     "metro-react-native-babel-preset": "0.54.1",
     "prettier": "1.12.0",
     "react": "16.6.3",
     "react-native": "0.57.8",
     "redux": "3.7.2",
-    "webpack": "4.17.1",
-    "webpack-cli": "^2.1.4"
+    "webpack": "5.75.0",
+    "webpack-cli": "^5.0.1"
   },
   "dependencies": {
     "bluebird": "3.5.5",
